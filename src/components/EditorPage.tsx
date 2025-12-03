@@ -22,14 +22,14 @@ const MainContent = styled.div`
   overflow-x: hidden;
 `;
 
-const SectionsContainer = styled.div`
+const SectionsContainer = styled.div<{ drawerOpen: boolean }>`
   flex: 1;
   padding: 40px 104px;
   display: flex;
   flex-direction: column;
   gap: 40px;
   transition: margin-right 0.3s ease;
-  margin-right: ${(props: { drawerOpen: boolean }) => 
+  margin-right: ${(props) => 
     props.drawerOpen ? '400px' : '0'};
 `;
 
@@ -78,7 +78,7 @@ const EditorPage: React.FC = () => {
             <>
               {sections
                 .sort((a, b) => a.order - b.order)
-                .map((section, index) => (
+                .map((section) => (
                   <div 
                     key={section.id} 
                     className={styles.sectionWrapper}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useEditor } from '../context/EditorContext';
-import { SectionData, CTA, ImageData } from '../types';
+import { SectionData, CTA } from '../types';
 import WysiwygEditor from './WysiwygEditor';
 import ImageUploader from './ImageUploader';
 import { FiX } from 'react-icons/fi';
@@ -106,22 +106,6 @@ const Input = styled.input`
   }
 `;
 
-const TextArea = styled.textarea`
-  padding: 10px 12px;
-  border: 1px solid #ced5d8;
-  border-radius: 6px;
-  font-size: 16px;
-  color: #01151d;
-  background: #ffffff;
-  min-height: 100px;
-  resize: vertical;
-  font-family: inherit;
-  
-  &:focus {
-    outline: none;
-    border-color: #01151d;
-  }
-`;
 
 const CTAFields = styled.div`
   position: relative;

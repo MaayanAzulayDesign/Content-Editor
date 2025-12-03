@@ -96,11 +96,11 @@ const MapLocations: React.FC<MapLocationsProps> = ({ data, sectionId }) => {
   const locations = data.locations || [];
   const { setCurrentSection } = useEditor();
 
-  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMapClick = () => {
     setCurrentSection(sectionId);
   };
 
-  const handlePinClick = (e: React.MouseEvent, locationId: string) => {
+  const handlePinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentSection(sectionId);
   };
@@ -126,7 +126,7 @@ const MapLocations: React.FC<MapLocationsProps> = ({ data, sectionId }) => {
               x={50 + (location.lng % 20)}
               y={50 + (location.lat % 20)}
               title={location.name}
-              onClick={(e) => handlePinClick(e, location.id)}
+              onClick={handlePinClick}
             />
           ))}
         </LocationPins>

@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { SectionData, CardData } from '../../types';
+import { SectionData } from '../../types';
 import { FiMail, FiArrowRight } from 'react-icons/fi';
 
 const Container = styled.div`

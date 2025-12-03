@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { EditorState, Section, SectionType, SectionData } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 
