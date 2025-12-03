@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useEditor } from '../context/EditorContext';
 import { exportToHTML } from '../utils/htmlExporter';
+import jllogo from '../assets/jllogo.svg';
 
 const ToolbarContainer = styled.div`
   display: flex;
@@ -52,11 +53,15 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   `}
 `;
 
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 400;
-  color: #01151d;
-  margin: 0;
+const LogoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  height: 24px;
+`;
+
+const Logo = styled.img`
+  height: 24px;
+  width: auto;
 `;
 
 const Toolbar: React.FC = () => {
@@ -72,7 +77,9 @@ const Toolbar: React.FC = () => {
 
   return (
     <ToolbarContainer>
-      <Title>JLL Content Editor</Title>
+      <LogoContainer>
+        <Logo src={jllogo} alt="JLL Logo" />
+      </LogoContainer>
       <LeftActions>
         <Button onClick={saveDraft}>Save Draft</Button>
         <Button onClick={loadDraft}>Load Draft</Button>
