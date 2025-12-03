@@ -1,0 +1,104 @@
+import React from 'react';
+import styled from 'styled-components';
+import { SectionData } from '../../types';
+
+const HeroContainer = styled.div`
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const HeroImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
+const HeroOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 104px;
+  text-align: center;
+`;
+
+const HeroTitle = styled.h1`
+  font-size: 48px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0 0 24px 0;
+  line-height: 60px;
+  letter-spacing: -0.84px;
+`;
+
+const HeroText = styled.div`
+  font-size: 16px;
+  color: #ffffff;
+  margin-bottom: 32px;
+  max-width: 800px;
+  line-height: 24px;
+  
+  p {
+    margin: 0 0 16px 0;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+`;
+
+const CTAButton = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: #01151d;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: background 0.2s ease;
+  
+  &:hover {
+    background: #1a2d35;
+  }
+`;
+
+interface HeroImageTextProps {
+  data: SectionData;
+}
+
+const HeroImageText: React.FC<HeroImageTextProps> = ({ data }) => {
+  return (
+    <HeroContainer>
+      {data.heroImage?.url && <HeroImage src={data.heroImage.url} alt={data.heroImage.alt} />}
+      <HeroOverlay>
+        {data.heroTitle && <HeroTitle>{data.heroTitle}</HeroTitle>}
+        {data.heroText && (
+          <HeroText dangerouslySetInnerHTML={{ __html: data.heroText }} />
+        )}
+        {data.heroCTA?.text && data.heroCTA?.url && (
+          <CTAButton href={data.heroCTA.url}>
+            {data.heroCTA.text}
+            <span>→</span>
+          </CTAButton>
+        )}
+      </HeroOverlay>
+    </HeroContainer>
+  );
+};
+
+export default HeroImageText;
+
