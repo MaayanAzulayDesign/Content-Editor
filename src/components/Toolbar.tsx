@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useEditor } from '../context/EditorContext';
 import { exportToHTML } from '../utils/htmlExporter';
+import { saveFileLocally, sendEmailWithAttachments } from '../utils/fileUtils';
+import LoadDraftModal from './LoadDraftModal';
+import SaveAndSendModal from './SaveAndSendModal';
 import jllogo from '../assets/jllogo.svg';
 
 const ToolbarContainer = styled.div`
@@ -65,33 +68,91 @@ const Logo = styled.img`
 `;
 
 const Toolbar: React.FC = () => {
-  const { state, saveDraft, loadDraft } = useEditor();
+  const { state, loadDraftFromFile } = useEditor();
+  const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
+  const [isSaveAndSendModalOpen, setIsSaveAndSendModalOpen] = useState(false);
+
+  const handleSaveDraft = async () => {
+    try {
+      const htmlContent = exportToHTML(state.sections, 'draft', state);
+      await saveFileLocally(htmlContent, 'jll-content-draft.html');
+    } catch (error) {
+      console.error('Failed to save draft:', error);
+      alert('Failed to save draft. Please try again.');
+    }
+  };
+
+  const handleLoadDraft = () => {
+    setIsLoadModalOpen(true);
+  };
+
+  const handleLoadDraftFile = async (file: File) => {
+    try {
+      const success = await loadDraftFromFile(file);
+      if (success) {
+        alert('Draft loaded successfully!');
+      } else {
+        alert('Failed to load draft. The file may not contain valid draft data.');
+      }
+    } catch (error) {
+      console.error('Failed to load draft:', error);
+      alert('Failed to load draft. Please make sure the file is a valid draft file.');
+    }
+  };
 
   const handleExportHTML = () => {
     exportToHTML(state.sections, 'standalone');
   };
 
-  const handleExportTemplate = () => {
-    exportToHTML(state.sections, 'template');
+  const handleSaveAndSend = () => {
+    setIsSaveAndSendModalOpen(true);
   };
 
+  const handleSendEmail = async (email: string, files: File[]) => {
+    try {
+      await sendEmailWithAttachments(email, files);
+      alert(`Email sent successfully to ${email}!`);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      alert('Failed to send email. Please try again.');
+    }
+  };
+
+  const htmlContent = React.useMemo(() => {
+    return exportToHTML(state.sections, 'draft', state);
+  }, [state.sections, state]);
+
   return (
-    <ToolbarContainer>
-      <LogoContainer>
-        <Logo src={jllogo} alt="JLL Logo" />
-      </LogoContainer>
-      <LeftActions>
-        <Button onClick={saveDraft}>Save Draft</Button>
-        <Button onClick={loadDraft}>Load Draft</Button>
-      </LeftActions>
-      <RightActions>
-        <Button onClick={handleExportHTML}>Export HTML</Button>
-        <Button onClick={handleExportTemplate}>Export Template</Button>
-        <Button variant="primary" onClick={handleExportHTML}>
-          Save & Send
-        </Button>
-      </RightActions>
-    </ToolbarContainer>
+    <>
+      <ToolbarContainer>
+        <LogoContainer>
+          <Logo src={jllogo} alt="JLL Logo" />
+        </LogoContainer>
+        <LeftActions>
+          <Button onClick={handleSaveDraft}>Save Draft</Button>
+          <Button onClick={handleLoadDraft}>Load Draft</Button>
+        </LeftActions>
+        <RightActions>
+          <Button onClick={handleExportHTML}>Export HTML</Button>
+          <Button variant="primary" onClick={handleSaveAndSend}>
+            Save & Send
+          </Button>
+        </RightActions>
+      </ToolbarContainer>
+
+      <LoadDraftModal
+        isOpen={isLoadModalOpen}
+        onClose={() => setIsLoadModalOpen(false)}
+        onLoad={handleLoadDraftFile}
+      />
+
+      <SaveAndSendModal
+        isOpen={isSaveAndSendModalOpen}
+        onClose={() => setIsSaveAndSendModalOpen(false)}
+        htmlContent={htmlContent}
+        onSend={handleSendEmail}
+      />
+    </>
   );
 };
 

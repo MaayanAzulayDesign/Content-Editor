@@ -1,4 +1,4 @@
-import { Section } from '../types';
+import { Section, EditorState } from '../types';
 
 const JLL_STYLES = `
   <style>
@@ -337,15 +337,98 @@ function renderSection(section: Section): string {
       `;
 
     case 'map-locations':
+      const locations = section.data.locations || [];
+      const locationsJSON = JSON.stringify(locations);
+      const mapId = `map-${section.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const validLocations = locations.filter((loc: any) => loc.lat && loc.lng);
+      const avgLat = validLocations.length > 0 ? validLocations.reduce((sum: number, loc: any) => sum + loc.lat, 0) / validLocations.length : 51.5074;
+      const avgLng = validLocations.length > 0 ? validLocations.reduce((sum: number, loc: any) => sum + loc.lng, 0) / validLocations.length : -0.1278;
+      
       return `
         <div class="section">
           <div style="padding: 88px 104px; text-align: center;">
             ${section.data.mapTitle ? `<h2 class="section-title">${section.data.mapTitle}</h2>` : ''}
             ${section.data.mapDescription ? `<div class="section-text">${section.data.mapDescription}</div>` : ''}
           </div>
-          <div class="map-container">
-            <div>Map Integration (Google Maps / Mapbox)</div>
-          </div>
+          <div class="map-container" id="${mapId}" style="width: 100%; height: 600px; border-radius: 8px; overflow: hidden;"></div>
+          <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+          <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+          <script>
+            (function() {
+              const locations = ${locationsJSON};
+              const mapElement = document.getElementById('${mapId}');
+              
+              if (mapElement && typeof L !== 'undefined') {
+                const map = L.map('${mapId}', {
+                  center: [${avgLat}, ${avgLng}],
+                  zoom: ${validLocations.length === 1 ? 15 : 10},
+                });
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                  maxZoom: 19,
+                }).addTo(map);
+                
+                const bounds = L.latLngBounds([]);
+                
+                locations.forEach(function(location) {
+                  if (location.lat && location.lng) {
+                    const customIcon = L.divIcon({
+                      className: 'custom-marker',
+                      html: '<div style="position: relative; display: flex; flex-direction: column; align-items: center;">' +
+                        (location.name ? '<div style="background: #4c5b62; border: 1px solid #ffffff; color: #ffffff; padding: 8px 12px; border-radius: 6px; font-family: \'Source Sans Pro\', sans-serif; font-size: 14px; font-weight: 400; line-height: 20px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); pointer-events: none; position: relative;">' +
+                          location.name +
+                          '<div style="position: absolute; bottom: -9px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #4c5b62;"></div>' +
+                          '<div style="position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 9px solid #ffffff; z-index: -1;"></div>' +
+                          '</div>' : '') +
+                        '</div>',
+                      iconSize: [200, 50],
+                      iconAnchor: [100, 50],
+                    });
+                    
+                    const marker = L.marker([location.lat, location.lng], {
+                      icon: customIcon,
+                      title: location.name || 'Location',
+                    });
+                    
+                    let popupContent = '<div style="padding: 16px; min-width: 220px;">';
+                    if (location.name) {
+                      popupContent += '<h3 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 400; color: #01151d;">' + location.name + '</h3>';
+                    }
+                    if (location.propertyCount !== undefined && location.propertyCount !== null) {
+                      popupContent += '<div style="margin: 0 0 16px 0; font-size: 16px; color: #56656b; font-weight: 500;">' +
+                        location.propertyCount + ' ' + (location.propertyCount === 1 ? 'Property' : 'Properties') +
+                        '</div>';
+                    }
+                    if (location.cta && location.cta.text && location.cta.url) {
+                      popupContent += '<a href="' + location.cta.url + '" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 20px; background: #01151d; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 400;">' + location.cta.text + '</a>';
+                    }
+                    popupContent += '</div>';
+                    
+                    marker.bindPopup(popupContent, {
+                      offset: [0, -10],
+                    });
+                    marker.addTo(map);
+                    bounds.extend([location.lat, location.lng]);
+                  }
+                });
+                
+                if (validLocations.length > 1) {
+                  map.fitBounds(bounds, { padding: [50, 50] });
+                }
+              }
+            })();
+          </script>
+          <style>
+            #${mapId} .custom-marker {
+              background: transparent !important;
+              border: none !important;
+            }
+            #${mapId} .leaflet-popup-content-wrapper {
+              border-radius: 8px;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+          </style>
         </div>
       `;
 
@@ -370,11 +453,20 @@ function renderSection(section: Section): string {
   }
 }
 
-export function exportToHTML(sections: Section[], format: 'standalone' | 'template' = 'standalone'): void {
+export function exportToHTML(
+  sections: Section[], 
+  format: 'standalone' | 'template' | 'draft' = 'standalone',
+  editorState?: EditorState
+): string {
   const sortedSections = [...sections].sort((a, b) => a.order - b.order);
   const sectionsHTML = sortedSections.map(renderSection).join('\n');
 
-  if (format === 'standalone') {
+  if (format === 'standalone' || format === 'draft') {
+    // Include editor state in draft format for loading later
+    const stateScript = format === 'draft' && editorState
+      ? `<script type="application/json" data-editor-state>${JSON.stringify(editorState)}</script>`
+      : '';
+
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -388,9 +480,15 @@ export function exportToHTML(sections: Section[], format: 'standalone' | 'templa
   <div style="max-width: 1512px; margin: 0 auto; background: #ffffff;">
     ${sectionsHTML}
   </div>
+  ${stateScript}
 </body>
 </html>
     `.trim();
+
+    if (format === 'draft') {
+      // Return HTML string for draft saving
+      return html;
+    }
 
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
@@ -401,6 +499,7 @@ export function exportToHTML(sections: Section[], format: 'standalone' | 'templa
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    return html;
   } else {
     // Template format - just the sections with placeholders
     const template = `
@@ -418,6 +517,7 @@ ${sectionsHTML}
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    return template;
   }
 }
 

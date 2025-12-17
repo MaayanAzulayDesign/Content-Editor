@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, ReactNode } from 'react';
 import { EditorState, Section, SectionType, SectionData } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { readFileAsText, parseHTMLToState } from '../utils/fileUtils';
 
 interface EditorContextType {
   state: EditorState;
@@ -15,6 +16,7 @@ interface EditorContextType {
   closeLibrary: () => void;
   saveDraft: () => void;
   loadDraft: () => void;
+  loadDraftFromFile: (file: File) => Promise<boolean>;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -160,28 +162,36 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   };
 
   const saveDraft = () => {
-    try {
-      localStorage.setItem('jll-editor-draft', JSON.stringify(state));
-      alert('Draft saved successfully!');
-    } catch (error) {
-      console.error('Failed to save draft:', error);
-      alert('Failed to save draft');
-    }
+    // This will be handled by the Toolbar component with file system access
+    // This function is kept for backward compatibility but won't be used directly
   };
 
   const loadDraft = () => {
+    // This will be handled by the Toolbar component with file upload
+    // This function is kept for backward compatibility but won't be used directly
+  };
+
+  const loadDraftFromFile = async (file: File) => {
     try {
+      const htmlContent = await readFileAsText(file);
+      const parsedState = parseHTMLToState(htmlContent);
+      
+      if (parsedState) {
+        dispatch({ type: 'LOAD_STATE', payload: { state: parsedState } });
+        return true;
+      } else {
+        // Try to parse from localStorage backup if HTML doesn't contain state
       const saved = localStorage.getItem('jll-editor-draft');
       if (saved) {
         const parsedState = JSON.parse(saved);
         dispatch({ type: 'LOAD_STATE', payload: { state: parsedState } });
-        alert('Draft loaded successfully!');
-      } else {
-        alert('No draft found');
+          return true;
+        }
+        throw new Error('Could not parse draft from file');
       }
     } catch (error) {
-      console.error('Failed to load draft:', error);
-      alert('Failed to load draft');
+      console.error('Failed to load draft from file:', error);
+      throw error;
     }
   };
 
@@ -200,6 +210,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         closeLibrary,
         saveDraft,
         loadDraft,
+        loadDraftFromFile,
       }}
     >
       {children}

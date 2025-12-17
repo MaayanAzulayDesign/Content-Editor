@@ -412,12 +412,64 @@ const SectionEditorDrawer: React.FC = () => {
                       placeholder="-0.1278"
                     />
                   </FormGroup>
+                  <FormGroup>
+                    <Label>Number of Properties</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={location.propertyCount || ''}
+                      onChange={(e) => {
+                        const locations = [...(formData.locations || [])];
+                        locations[index] = { 
+                          ...location, 
+                          propertyCount: parseInt(e.target.value) || 0 
+                        };
+                        handleChange('locations', locations);
+                      }}
+                      placeholder="0"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>CTA Text (Optional)</Label>
+                    <Input
+                      value={location.cta?.text || ''}
+                      onChange={(e) => {
+                        const locations = [...(formData.locations || [])];
+                        locations[index] = { 
+                          ...location, 
+                          cta: { ...location.cta, text: e.target.value, url: location.cta?.url || '' }
+                        };
+                        handleChange('locations', locations);
+                      }}
+                      placeholder="Button text"
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>CTA URL (Optional)</Label>
+                    <Input
+                      value={location.cta?.url || ''}
+                      onChange={(e) => {
+                        const locations = [...(formData.locations || [])];
+                        locations[index] = { 
+                          ...location, 
+                          cta: { ...location.cta, url: e.target.value, text: location.cta?.text || '' }
+                        };
+                        handleChange('locations', locations);
+                      }}
+                      placeholder="https://..."
+                    />
+                  </FormGroup>
                   <Button
                     onClick={() => {
                       const locations = (formData.locations || []).filter((_, i) => i !== index);
                       handleChange('locations', locations);
                     }}
-                    style={{ background: '#de0614', marginTop: '8px' }}
+                    style={{ 
+                      background: 'transparent', 
+                      border: '1px solid #8C0F2E', 
+                      color: '#8C0F2E',
+                      marginTop: '8px' 
+                    }}
                   >
                     Remove Location
                   </Button>
@@ -431,6 +483,8 @@ const SectionEditorDrawer: React.FC = () => {
                   address: '',
                   lat: 0,
                   lng: 0,
+                  propertyCount: 0,
+                  cta: { text: '', url: '' },
                 };
                 handleChange('locations', [...locations, newLocation]);
               }}>
@@ -715,7 +769,12 @@ const SectionEditorDrawer: React.FC = () => {
         </DrawerHeader>
         <DrawerContent>
           {renderFields()}
-          <Button onClick={handleDelete} style={{ background: '#de0614', marginTop: '24px' }}>
+          <Button onClick={handleDelete} style={{ 
+            background: 'transparent', 
+            border: '1px solid #8C0F2E', 
+            color: '#8C0F2E',
+            marginTop: '24px' 
+          }}>
             Delete Section
           </Button>
         </DrawerContent>

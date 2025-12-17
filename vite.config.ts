@@ -11,10 +11,10 @@ export default defineConfig(({ mode }) => {
       react(),
       ...(isSingleFile ? [viteSingleFile()] : [])
     ],
-    base: process.env.VITE_BASE || '/',
-    server: {
-      port: 3000,
-      open: true
+  base: process.env.VITE_BASE || '/',
+  server: {
+    port: 3000,
+    open: true
     },
     build: {
       ...(isSingleFile ? {

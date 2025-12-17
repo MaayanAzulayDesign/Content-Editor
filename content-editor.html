@@ -1,0 +1,2208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JLL Content Editor</title>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #f6f9fa;
+      color: #01151d;
+      line-height: 1.5;
+    }
+    
+    /* Toolbar Styles */
+    .toolbar-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 104px;
+      background: #ffffff;
+      border-bottom: 1px solid #eaeff1;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      height: 24px;
+    }
+    
+    .logo-container svg {
+      height: 24px;
+      width: auto;
+    }
+    
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .toolbar-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(30, 105, 118, 0.08);
+      color: #01151d;
+    }
+    
+    .toolbar-btn:hover {
+      background: rgba(30, 105, 118, 0.12);
+    }
+    
+    .toolbar-btn.primary {
+      background: #01151d;
+      color: #ffffff;
+    }
+    
+    .toolbar-btn.primary:hover {
+      background: #1a2d35;
+    }
+    
+    /* Main Container */
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: 100vh;
+      background-color: #f6f9fa;
+    }
+    
+    .main-content {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    .sections-container {
+      flex: 1;
+      padding: 40px 104px;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      transition: margin-right 0.3s ease;
+    }
+    
+    .sections-container.drawer-open {
+      margin-right: 400px;
+    }
+    
+    .section-wrapper {
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .section-wrapper:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .add-section-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 120px;
+      background: #ffffff;
+      border: 2px dashed #ced5d8;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 16px;
+      color: #56656b;
+      font-weight: 400;
+    }
+    
+    .add-section-btn:hover {
+      border-color: #01151d;
+      background-color: #f6f9fa;
+      color: #01151d;
+    }
+    
+    .add-section-btn:active {
+      transform: scale(0.98);
+    }
+    
+    /* Section Library */
+    .library-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .library-drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 500px;
+      background: #ffffff;
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+      }
+      to {
+        transform: translateX(0);
+      }
+    }
+    
+    .library-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      border-bottom: 1px solid #eaeff1;
+    }
+    
+    .library-title {
+      font-size: 24px;
+      font-weight: 400;
+      color: #01151d;
+      margin: 0;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #56656b;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .close-btn:hover {
+      color: #01151d;
+    }
+    
+    .layout-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .layout-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 24px;
+      background: #f6f9fa;
+      border: 2px solid #ced5d8;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    
+    .layout-card:hover {
+      border-color: #01151d;
+      background: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .layout-icon {
+      width: 100%;
+      height: 60px;
+      background: #ffffff;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Editor Drawer */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 999;
+    }
+    
+    .drawer {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 400px;
+      background: #ffffff;
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .drawer-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px;
+      border-bottom: 1px solid #eaeff1;
+    }
+    
+    .drawer-title {
+      font-size: 20px;
+      font-weight: 400;
+      color: #01151d;
+      margin: 0;
+    }
+    
+    .drawer-content {
+      position: relative;
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .form-group {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-label {
+      font-size: 14px;
+      font-weight: 400;
+      color: #01151d;
+    }
+    
+    .form-input {
+      padding: 10px 12px;
+      border: 1px solid #ced5d8;
+      border-radius: 6px;
+      font-size: 16px;
+      color: #01151d;
+      background: #ffffff;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #01151d;
+    }
+    
+    .form-btn {
+      padding: 10px 20px;
+      background: #01151d;
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    
+    .form-btn:hover {
+      background: #1a2d35;
+    }
+    
+    .form-btn.danger {
+      background: #de0614;
+    }
+    
+    .form-btn.danger:hover {
+      background: #b00511;
+    }
+    
+    .cta-fields {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 16px;
+      background: #f6f9fa;
+      border-radius: 6px;
+    }
+    
+    /* Section Styles - Hero */
+    .hero-container {
+      position: relative;
+      width: 100%;
+      min-height: 500px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .hero-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 104px;
+      text-align: center;
+    }
+    
+    .hero-title {
+      font-size: 48px;
+      font-weight: 400;
+      color: #ffffff;
+      margin: 0 0 24px 0;
+      line-height: 60px;
+      letter-spacing: -0.84px;
+    }
+    
+    .hero-text {
+      font-size: 16px;
+      color: #ffffff;
+      margin-bottom: 32px;
+      max-width: 800px;
+      line-height: 24px;
+    }
+    
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      background: #01151d;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: background 0.2s ease;
+    }
+    
+    .hero-cta:hover {
+      background: #1a2d35;
+    }
+    
+    /* Image Text Sections */
+    .image-text-container {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      width: 100%;
+      padding: 88px 60px;
+    }
+    
+    @media (max-width: 768px) {
+      .image-text-container {
+        flex-direction: column;
+      }
+    }
+    
+    .image-text-image {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .image-text-image img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+    
+    .image-text-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 56px;
+    }
+    
+    .section-title {
+      font-size: 32px;
+      font-weight: 400;
+      color: #01151d;
+      margin: 0;
+      line-height: 40px;
+      letter-spacing: -0.16px;
+    }
+    
+    .section-text {
+      font-size: 16px;
+      color: #56656b;
+      line-height: 24px;
+    }
+    
+    .section-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      background: #01151d;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 16px;
+      width: fit-content;
+      transition: background 0.2s ease;
+    }
+    
+    .section-cta:hover {
+      background: #1a2d35;
+    }
+    
+    /* Text CTA Section */
+    .text-cta-container {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      padding: 88px 60px;
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .cta-container {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .cta-button.primary {
+      background: #01151d;
+      color: #ffffff;
+    }
+    
+    .cta-button.primary:hover {
+      background: #1a2d35;
+    }
+    
+    .cta-button.secondary {
+      background: rgba(30, 105, 118, 0.08);
+      color: #01151d;
+    }
+    
+    .cta-button.secondary:hover {
+      background: rgba(30, 105, 118, 0.12);
+    }
+    
+    /* Plain Text Section */
+    .plain-text-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 88px 60px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Cards Carousel Section */
+    .cards-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: 88px 60px;
+      width: 100%;
+    }
+    
+    .cards-header {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .cards-grid {
+      display: grid;
+      gap: 24px;
+      width: 100%;
+    }
+    
+    @media (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .card {
+      position: relative;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-image-container {
+      position: relative;
+      width: 100%;
+      height: 166px;
+      overflow: hidden;
+      background: #f6f9fa;
+    }
+    
+    .card-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .distance-badge {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(173, 216, 230, 0.95);
+      backdrop-filter: blur(8px);
+      color: #01151d;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+    }
+    
+    .card-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 400;
+      color: #01151d;
+      margin: 0;
+      line-height: 24px;
+    }
+    
+    .card-subtitle {
+      font-size: 16px;
+      color: #56656b;
+      margin: 0;
+      line-height: 24px;
+      white-space: pre-line;
+      flex: 1;
+    }
+    
+    .card-cta-container {
+      display: flex;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+    
+    .card-cta {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 14px 24px;
+      border: 1px solid #ced5d8;
+      background: #ffffff;
+      color: #01151d;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      min-height: 48px;
+    }
+    
+    .card-cta:hover {
+      border-color: #01151d;
+      background: #f6f9fa;
+    }
+    
+    .card-cta.primary {
+      background: #01151d;
+      color: #ffffff;
+      border-color: #01151d;
+    }
+    
+    .card-cta.primary:hover {
+      background: #1a2d35;
+      border-color: #1a2d35;
+    }
+    
+    /* Map Locations Section */
+    .map-container {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: 88px 60px;
+    }
+    
+    .map-header {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 852px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .map-placeholder {
+      width: 100%;
+      height: 600px;
+      background: #eaeff1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    
+    .map-placeholder:hover {
+      background: #dfe5e8;
+    }
+    
+    .location-pin {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: #de0614;
+      border-radius: 50%;
+      border: 3px solid #ffffff;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+    }
+    
+    .location-pin:hover {
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    
+    /* Text Boxes Section */
+    .text-boxes-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: 88px 60px;
+      width: 100%;
+    }
+    
+    .text-boxes-grid {
+      display: grid;
+      gap: 40px;
+      width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+      .text-boxes-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .text-box {
+      position: relative;
+      padding: 32px;
+      border-radius: 12px;
+      border: 1px solid #ced5d8;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    
+    .text-box.white {
+      background: #ffffff;
+    }
+    
+    .text-box.light-grey {
+      background: #f6f9fa;
+    }
+    
+    .box-title {
+      font-size: 24px;
+      font-weight: 400;
+      color: #01151d;
+      margin: 0;
+      line-height: 32px;
+      letter-spacing: -0.06px;
+    }
+    
+    .box-text {
+      font-size: 16px;
+      color: #56656b;
+      line-height: 24px;
+    }
+    
+    /* Image Uploader */
+    .upload-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .upload-area {
+      position: relative;
+      width: 100%;
+      min-height: 200px;
+      border: 2px dashed #ced5d8;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .upload-area.has-image {
+      border-color: #ced5d8;
+      background: #f6f9fa;
+    }
+    
+    .upload-area:hover {
+      border-color: #01151d;
+      background: #f6f9fa;
+    }
+    
+    .image-preview {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+    
+    .remove-image-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .remove-image-btn:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .upload-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #56656b;
+      text-align: center;
+    }
+    
+    .upload-icon {
+      font-size: 32px;
+      color: #01151d;
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .image-url-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced5d8;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #01151d;
+      background: #ffffff;
+    }
+    
+    .image-url-input:focus {
+      outline: none;
+      border-color: #01151d;
+    }
+    
+    /* Quill Editor Overrides */
+    .ql-container {
+      font-size: 16px;
+      font-family: 'Source Sans Pro', sans-serif;
+      min-height: 150px;
+    }
+    
+    .ql-editor {
+      min-height: 150px;
+    }
+    
+    .ql-toolbar {
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      border-color: #ced5d8;
+    }
+    
+    .ql-container {
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      border-color: #ced5d8;
+    }
+    
+    .ql-editor.ql-blank::before {
+      color: #9ca3af;
+      font-style: normal;
+    }
+  </style>
+</head>
+<body>
+  <div class="editor-container">
+    <!-- Toolbar -->
+    <div class="toolbar-container">
+      <div class="logo-container">
+        <svg width="55" height="24" viewBox="0 0 55 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M32.6667 4.79999H28.0209H26.568V5.36049C26.8606 5.38899 27.0991 5.42015 27.2944 5.4648C27.5245 5.51724 27.6945 5.58811 27.8203 5.69527C28.177 5.99965 28.1769 6.5632 28.1768 7.57573L28.1768 7.63899L28.1766 14.7029C28.1765 14.7841 28.1768 14.8674 28.1772 14.952C28.1831 16.3643 28.1906 18.1744 26.2688 18.1491C25.3955 18.1377 24.4991 17.5158 24.2209 16.3794H23.52C23.8164 18.2836 24.8308 19.5754 27.2889 19.5754H27.2944H27.3001C29.3882 19.5754 31.2515 18.6161 31.2483 15.3555V9.85972V7.63918L31.2483 7.57592C31.2481 6.56433 31.2481 6.02358 31.6047 5.71921C31.8375 5.52066 32.0302 5.42243 32.6667 5.36049V4.79999ZM39.6615 4.80013H33.5628V4.80032V5.33309V5.36064C34.1997 5.42258 34.3922 5.52081 34.6247 5.71936C34.9166 5.96845 34.9694 6.376 34.9791 7.06951L34.9788 7.16557C34.9781 7.35045 34.9774 7.55316 34.981 7.77593V16.2249C34.9772 16.4552 34.978 16.664 34.9788 16.854L34.9791 16.9313C34.9694 17.6248 34.9166 18.0324 34.6247 18.2813C34.392 18.4798 34.1995 18.5781 33.5628 18.64V18.6676V19.2003H39.6617H39.6866H42.7781L43.7499 16.3798H43.0342C42.3259 17.9294 41.2307 18.1105 40.2317 18.1105C39.4147 18.1105 38.8711 18.0645 38.4856 17.8148C38.1745 17.6159 38.0582 17.0909 38.0527 16.2013V7.7993V7.63932L38.0527 7.57458C38.0526 6.56299 38.0525 6.00002 38.4092 5.6958C38.6419 5.49725 39.0248 5.42277 39.6615 5.36083V4.80013ZM43.7252 4.80013H49.824V5.36083C49.1873 5.42277 48.8045 5.49725 48.5719 5.6958C48.2152 5.99987 48.2153 6.56244 48.2154 7.5731L48.2155 7.63932V7.7993V16.2013C48.2208 17.0909 48.3371 17.6159 48.6479 17.8148C49.0336 18.0645 49.577 18.1105 50.3942 18.1105C51.3932 18.1105 52.4884 17.9294 53.1967 16.3798H53.9124L52.9406 19.2003H49.8489H49.824H43.7252V18.6676V18.64C44.3617 18.5781 44.5543 18.4798 44.7871 18.2813C45.0789 18.0324 45.1315 17.6248 45.1412 16.9313L45.141 16.8675C45.1402 16.6739 45.1394 16.4607 45.1433 16.2249V7.77593C45.1395 7.53457 45.1403 7.31675 45.1411 7.11965L45.1412 7.06951C45.1317 6.376 45.0789 5.96845 44.7871 5.71936C44.5545 5.52081 44.3619 5.42258 43.7252 5.36064V5.33309V4.80032V4.80013Z" fill="black"/>
+<path d="M21.4211 8.88864C21.1741 7.28997 20.6957 5.65766 19.9463 4.1901C19.3328 2.98834 18.516 1.84795 17.4278 1.03361C16.6162 0.425792 15.5985 0.0254601 14.5776 0.000189897H14.5774V0H14.5773C13.9339 0.0161501 13.2923 0.181261 12.7023 0.452963C12.3142 0.274172 11.9036 0.144401 11.4846 0.0701103C11.3839 0.0522502 11.2828 0.0357204 11.1816 0.0247004L11.1814 0.0248903C11.0638 0.0121602 10.9458 0.00303991 10.8278 0.000189897H10.8276H10.8274C10.1842 0.01615 9.54243 0.181451 8.95266 0.453153C8.36271 0.181451 7.72108 0.01615 7.07811 0.000189897H7.07755V0H7.07717C6.05648 0.0254602 5.03846 0.425793 4.22734 1.03342C3.13902 1.84776 2.32201 2.98834 1.7085 4.18991C0.958947 5.65748 0.480714 7.28978 0.233713 8.88845C0.0729725 9.92984 -0.000557196 10.9739 0.000392808 11.9999H1.3015e-05C-0.00112699 13.0259 0.0725926 14.0698 0.233523 15.1116C0.480524 16.71 0.958947 18.3423 1.70831 19.8099C2.32182 21.0117 3.13883 22.152 4.22696 22.9664C5.03846 23.5742 6.0561 23.9745 7.07717 24H7.07736C7.7207 23.9839 8.36252 23.8186 8.95228 23.5468C8.95266 23.5467 8.95285 23.5465 8.95304 23.5463C8.95266 23.5465 8.95266 23.5468 8.95228 23.5468C9.34026 23.7256 9.75105 23.8552 10.1698 23.9297C10.2705 23.9476 10.3716 23.9641 10.4731 23.9749C10.4732 23.9749 10.4736 23.9749 10.4738 23.9747C10.4734 23.9747 10.4734 23.9749 10.4731 23.9749C10.5907 23.9876 10.7088 23.9966 10.8268 23.9996H10.827V23.9992H10.8272C11.4704 23.9833 12.1122 23.818 12.7018 23.5463C12.7021 23.5461 12.7027 23.5457 12.7031 23.5455C12.7027 23.5457 12.7025 23.5463 12.702 23.5465C13.2919 23.8184 13.9333 23.9833 14.5763 23.9996H14.5769V23.9994H14.5771C15.5976 23.974 16.6156 23.5736 17.4269 22.9658C18.5152 22.1517 19.332 21.0111 19.9455 19.8095C20.6951 18.342 21.1733 16.7095 21.4205 15.1108C21.5813 14.0692 21.6548 13.0253 21.6538 11.9993H21.654C21.6556 10.9741 21.582 9.93022 21.4211 8.88864ZM19.5532 13.5499C19.364 16.2907 18.6218 19.0414 17.0752 21.3377C16.413 22.3229 15.5628 23.2755 14.5759 23.9666C14.1995 23.7044 13.8452 23.4047 13.5138 23.0804C13.5136 23.0804 13.5136 23.0804 13.5136 23.0804C13.5136 23.0804 13.5138 23.0804 13.5138 23.0802C13.5684 23.0422 13.6246 23.0063 13.6776 22.9664C14.7657 22.152 15.5824 21.0115 16.1963 19.8099C16.9456 18.3425 17.4239 16.71 17.671 15.1114C17.8318 14.0698 17.9055 13.0259 17.9042 11.9999H17.9046C17.9057 10.9739 17.832 9.93003 17.6712 8.88845C17.4242 7.28978 16.9458 5.65767 16.1966 4.18991C15.6299 3.08011 14.8868 2.02579 13.9199 1.22912C13.609 1.56162 13.321 1.91483 13.0565 2.27754C13.1492 2.40485 13.2393 2.5331 13.3265 2.66211C14.8725 4.95884 15.6147 7.70949 15.8035 10.4503C15.8389 10.964 15.8556 11.4816 15.8562 11.9997C15.8556 12.5182 15.8389 13.0356 15.8035 13.5494C15.6143 16.2901 14.8723 19.041 13.3259 21.3373C13.1331 21.6242 12.9241 21.9064 12.7023 22.1809C12.4494 22.4942 12.1796 22.7971 11.8908 23.0798C11.5836 23.3806 11.2557 23.658 10.9097 23.9061C10.8865 23.9229 10.8542 23.9476 10.8274 23.9671C10.8105 23.9553 10.794 23.9419 10.7769 23.9297C10.6743 23.8571 10.5726 23.7824 10.4736 23.7047C10.2266 23.5104 9.99007 23.301 9.76435 23.0802C9.76416 23.0802 9.76416 23.0802 9.76397 23.08C9.76397 23.08 9.76416 23.08 9.76416 23.0798C9.81869 23.042 9.87512 23.0059 9.92794 22.9662C10.2525 22.7236 10.5496 22.4494 10.8274 22.1557C10.8278 22.1553 10.8282 22.1547 10.8285 22.1543C10.8282 22.1547 10.828 22.1555 10.8274 22.1559C11.0341 22.374 11.2532 22.5796 11.4852 22.7705C11.796 22.438 12.0839 22.0848 12.3484 21.7219C12.2556 21.5948 12.1654 21.4665 12.0787 21.3373C11.9836 21.196 11.9003 21.0476 11.8112 20.9028H11.811L11.8112 20.9026C12.0432 20.5488 12.256 20.1831 12.4468 19.8095C13.1961 18.3421 13.6746 16.7097 13.9216 15.111C14.0823 14.0694 14.1558 13.0255 14.1549 11.9995C14.156 10.9735 14.0823 9.92965 13.9216 8.88807C13.6748 7.2894 13.196 5.65729 12.4468 4.18953C12.3599 4.01929 12.2676 3.85075 12.1724 3.68355C11.773 4.41525 11.4474 5.18323 11.1816 5.97269C11.6674 7.4167 11.9492 8.93348 12.0537 10.4497C12.089 10.9634 12.1027 11.4812 12.1033 11.9993H12.1014C12.101 12.5177 12.0888 13.0354 12.0535 13.549C11.926 15.4005 11.5376 17.2534 10.8274 18.9712C10.5513 19.6391 10.2243 20.2845 9.84377 20.9022C9.75466 21.0472 9.67144 21.1954 9.57625 21.3369C9.38321 21.6238 9.1742 21.906 8.95266 22.1805C8.69958 22.4939 8.42978 22.7969 8.14079 23.0794C7.83375 23.3802 7.50562 23.6578 7.15963 23.9058C7.13208 23.9257 7.10548 23.9472 7.07755 23.9667C6.08479 23.275 5.24499 22.3269 4.57922 21.3371C3.033 19.0406 2.29066 16.2898 2.1018 13.549C2.06646 13.0352 2.04974 12.5177 2.04917 11.9993C2.04974 11.4808 2.06646 10.9634 2.1018 10.4497C2.29104 7.70911 3.03319 4.95827 4.5796 2.66173C5.24328 1.67448 6.09011 0.724854 7.07964 0.03344C7.45584 0.295832 7.81 0.595084 8.14117 0.919036C8.08664 0.957036 8.0304 0.993136 7.97739 1.03285C6.88925 1.84719 6.07244 2.98758 5.45893 4.18934C4.70937 5.65691 4.23114 7.2892 3.98395 8.88787C3.82321 9.92946 3.74949 10.9733 3.75082 11.9993H3.75044C3.74949 13.0255 3.82302 14.0692 3.98376 15.1108C4.23076 16.7093 4.70937 18.3418 5.45855 19.8093C6.02532 20.9191 6.76841 21.9734 7.73533 22.7701C8.04617 22.4374 8.33421 22.0844 8.59888 21.7215C8.50616 21.5944 8.41591 21.466 8.32889 21.3369C6.78285 19.0404 6.04071 16.2898 5.85166 13.5488C5.81632 13.0352 5.7996 12.5175 5.79903 11.9993C5.7996 11.4808 5.81632 10.9634 5.85166 10.4497C6.0409 7.70892 6.78285 4.95827 8.32927 2.66173C8.52212 2.37482 8.73112 2.09286 8.95285 1.81831C9.20575 1.505 9.47555 1.20233 9.76435 0.919416C10.0716 0.618644 10.3995 0.341242 10.7455 0.0931009C10.7706 0.0750508 10.8016 0.0513 10.828 0.0322999C10.8451 0.0442699 10.8614 0.0575705 10.8783 0.0697305H10.8785C10.9809 0.142311 11.0826 0.216791 11.1818 0.294692C11.4288 0.488873 11.6651 0.698255 11.8908 0.919226C11.8361 0.957036 11.7801 0.993326 11.7271 1.03285C11.4027 1.27529 11.1054 1.54965 10.8276 1.8432C10.6211 1.62508 10.402 1.41969 10.17 1.22855C9.85916 1.56105 9.57131 1.91426 9.30683 2.27716C9.39955 2.40427 9.48961 2.53253 9.57644 2.66154C9.67163 2.8029 9.75485 2.95129 9.84396 3.09607C9.61197 3.44985 9.39916 3.81579 9.2084 4.18915C8.45923 5.65672 7.98062 7.28902 7.73362 8.88769C7.57288 9.92927 7.49935 10.9731 7.5003 11.9991H7.50011C7.49897 13.0253 7.57269 14.069 7.73343 15.1106C7.98024 16.7091 8.45904 18.3416 9.20821 19.8091C9.29504 19.9794 9.38739 20.1477 9.48258 20.3151C9.88196 19.5834 10.2076 18.8156 10.4734 18.026C9.9876 16.5818 9.70583 15.0654 9.60133 13.549C9.56599 13.0352 9.55231 12.5175 9.55174 11.9993H9.55364C9.55402 11.481 9.56618 10.9633 9.60152 10.4497C9.7292 8.59793 10.1174 6.74523 10.8274 5.02743C11.1035 4.35939 11.4305 3.71395 11.8112 3.09626C11.9003 2.95129 11.9834 2.80309 12.0787 2.66173C12.2718 2.37482 12.4808 2.09286 12.7023 1.81831C12.9552 1.505 13.2252 1.20214 13.5142 0.919226C13.8212 0.618454 14.1494 0.341052 14.4954 0.0929103C14.5193 0.0758102 14.552 0.0518704 14.5788 0.0328703C15.571 0.724855 16.4102 1.6722 17.076 2.66154C18.6222 4.95808 19.3645 7.70892 19.5534 10.4497C19.5885 10.9634 19.6053 11.481 19.606 11.9993C19.6053 12.5188 19.5883 13.036 19.5532 13.5499Z" fill="#DE0614"/>
+</svg>
+
+      </div>
+      <div class="toolbar-left">
+        <button class="toolbar-btn" onclick="saveDraft()">Save Draft</button>
+        <button class="toolbar-btn" onclick="loadDraft()">Load Draft</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="toolbar-btn" onclick="exportHTML('standalone')">Export HTML</button>
+        <button class="toolbar-btn" onclick="exportHTML('template')">Export Template</button>
+        <button class="toolbar-btn primary" onclick="exportHTML('standalone')">Save & Send</button>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="sections-container" id="sectionsContainer">
+        <!-- Sections will be rendered here -->
+      </div>
+      
+      <!-- Section Library -->
+      <div id="libraryOverlay" class="library-overlay" style="display: none;" onclick="closeLibrary()">
+        <div class="library-drawer" onclick="event.stopPropagation()">
+          <div class="library-header">
+            <h2 class="library-title">Choose a Section Layout</h2>
+            <button class="close-btn" onclick="closeLibrary()">×</button>
+          </div>
+          <div class="layout-grid" id="layoutGrid">
+            <!-- Layout cards will be generated here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Editor Drawer -->
+      <div id="drawerOverlay" class="drawer-overlay" style="display: none;" onclick="closeDrawer()">
+        <div class="drawer" onclick="event.stopPropagation()" id="drawer">
+          <div class="drawer-header">
+            <h2 class="drawer-title">Edit Section</h2>
+            <button class="close-btn" onclick="closeDrawer()">×</button>
+          </div>
+          <div class="drawer-content" id="drawerContent">
+            <!-- Editor fields will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple UUID generator
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // State Management
+    let state = {
+      sections: [],
+      currentSectionId: null,
+      isDrawerOpen: false,
+      isLibraryOpen: false
+    };
+
+    const sectionLayouts = [
+      { type: 'hero-image-text', name: 'Hero with Image & Text' },
+      { type: 'image-text-left', name: 'Image Left, Text Right' },
+      { type: 'image-text-right', name: 'Image Right, Text Left' },
+      { type: 'text-cta', name: 'Text with CTA' },
+      { type: 'cards-carousel', name: 'Cards Carousel' },
+      { type: 'plain-text', name: 'Plain Text' },
+      { type: 'map-locations', name: 'Map with Locations' },
+      { type: 'text-boxes', name: 'Text Boxes' }
+    ];
+
+    // Initialize
+    function init() {
+      renderLayoutGrid();
+      renderSections();
+      loadFromStorage();
+    }
+
+    function renderLayoutGrid() {
+      const grid = document.getElementById('layoutGrid');
+      grid.innerHTML = sectionLayouts.map(layout => `
+        <button class="layout-card" onclick="selectLayout('${layout.type}')">
+          <div class="layout-icon">
+            <div style="width: 100%; height: 100%; background: #e5e7eb; border-radius: 3px;"></div>
+          </div>
+          <span style="font-size: 14px; color: #01151d;">${layout.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function openLibrary() {
+      state.isLibraryOpen = true;
+      document.getElementById('libraryOverlay').style.display = 'flex';
+    }
+
+    function closeLibrary() {
+      state.isLibraryOpen = false;
+      document.getElementById('libraryOverlay').style.display = 'none';
+    }
+
+    function selectLayout(type) {
+      addSection(type);
+      closeLibrary();
+    }
+
+    function addSection(type) {
+      const defaultData = {};
+      
+      if (type === 'cards-carousel') {
+        defaultData.cardCount = 2;
+        defaultData.cards = [
+          { id: uuidv4(), title: '', subtitle: '', distance: '', cta: { text: '', url: '' }, cta2: { text: '', url: '' } },
+          { id: uuidv4(), title: '', subtitle: '', distance: '', cta: { text: '', url: '' }, cta2: { text: '', url: '' } }
+        ];
+      } else if (type === 'map-locations') {
+        defaultData.locations = [];
+      } else if (type === 'text-boxes') {
+        defaultData.textBoxesCount = 2;
+        defaultData.textBoxes = [
+          { id: uuidv4(), title: '', text: '', backgroundColor: 'white' },
+          { id: uuidv4(), title: '', text: '', backgroundColor: 'white' }
+        ];
+      }
+      
+      const newSection = {
+        id: uuidv4(),
+        type: type,
+        data: defaultData,
+        order: state.sections.length
+      };
+      
+      state.sections.push(newSection);
+      state.currentSectionId = newSection.id;
+      state.isDrawerOpen = true;
+      state.isLibraryOpen = false;
+      
+      renderSections();
+      openDrawer(newSection.id);
+      saveToStorage();
+    }
+
+    function setCurrentSection(sectionId) {
+      state.currentSectionId = sectionId;
+      state.isDrawerOpen = true;
+      openDrawer(sectionId);
+    }
+
+    function openDrawer(sectionId) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      state.currentSectionId = sectionId;
+      state.isDrawerOpen = true;
+      
+      document.getElementById('drawerOverlay').style.display = 'block';
+      document.getElementById('sectionsContainer').classList.add('drawer-open');
+      
+      renderDrawer(section);
+    }
+
+    function closeDrawer() {
+      state.isDrawerOpen = false;
+      state.currentSectionId = null;
+      document.getElementById('drawerOverlay').style.display = 'none';
+      document.getElementById('sectionsContainer').classList.remove('drawer-open');
+      saveToStorage();
+    }
+
+    function updateSection(sectionId, data) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (section) {
+        section.data = { ...section.data, ...data };
+        renderSections();
+        renderDrawer(section);
+        saveToStorage();
+      }
+    }
+
+    function deleteSection(sectionId) {
+      if (confirm('Are you sure you want to delete this section?')) {
+        state.sections = state.sections.filter(s => s.id !== sectionId);
+        if (state.currentSectionId === sectionId) {
+          closeDrawer();
+        }
+        renderSections();
+        saveToStorage();
+      }
+    }
+
+    // Render Functions
+    function renderSections() {
+      const container = document.getElementById('sectionsContainer');
+      const sortedSections = [...state.sections].sort((a, b) => a.order - b.order);
+      
+      if (sortedSections.length === 0) {
+        container.innerHTML = `
+          <button class="add-section-btn" onclick="openLibrary()">
+            <span style="font-size: 24px;">+</span>
+            <span>Add Your First Section</span>
+          </button>
+        `;
+      } else {
+        container.innerHTML = sortedSections.map(section => `
+          <div class="section-wrapper" onclick="setCurrentSection('${section.id}')">
+            ${renderSection(section)}
+          </div>
+        `).join('') + `
+          <button class="add-section-btn" onclick="openLibrary()">
+            <span style="font-size: 24px;">+</span>
+            <span>Add New Section</span>
+          </button>
+        `;
+      }
+    }
+
+    function renderSection(section) {
+      const data = section.data;
+      
+      switch (section.type) {
+        case 'hero-image-text':
+          return `
+            <div class="hero-container">
+              ${data.heroImage?.url ? `<img src="${data.heroImage.url}" alt="${data.heroImage.alt || ''}" class="hero-image" />` : ''}
+              <div class="hero-overlay">
+                ${data.heroTitle ? `<h1 class="hero-title">${escapeHtml(data.heroTitle)}</h1>` : ''}
+                ${data.heroText ? `<div class="hero-text">${data.heroText}</div>` : ''}
+                ${data.heroCTA?.text && data.heroCTA?.url ? `<a href="${data.heroCTA.url}" class="hero-cta">${escapeHtml(data.heroCTA.text)} →</a>` : ''}
+              </div>
+            </div>
+          `;
+          
+        case 'image-text-left':
+        case 'image-text-right':
+          const imageFirst = section.type === 'image-text-left';
+          return `
+            <div class="image-text-container">
+              ${imageFirst && data.image?.url ? `
+                <div class="image-text-image">
+                  <img src="${data.image.url}" alt="${data.image.alt || ''}" />
+                </div>
+              ` : ''}
+              <div class="image-text-content">
+                ${data.title ? `<h2 class="section-title">${escapeHtml(data.title)}</h2>` : ''}
+                ${data.text ? `<div class="section-text">${data.text}</div>` : ''}
+                ${data.cta?.text && data.cta?.url ? `<a href="${data.cta.url}" class="section-cta">${escapeHtml(data.cta.text)} →</a>` : ''}
+              </div>
+              ${!imageFirst && data.image?.url ? `
+                <div class="image-text-image">
+                  <img src="${data.image.url}" alt="${data.image.alt || ''}" />
+                </div>
+              ` : ''}
+            </div>
+          `;
+          
+        case 'text-cta':
+          return `
+            <div class="text-cta-container">
+              ${data.heading ? `<h2 class="section-title">${escapeHtml(data.heading)}</h2>` : ''}
+              ${data.bodyText ? `<div class="section-text">${data.bodyText}</div>` : ''}
+              ${data.ctas && data.ctas.length > 0 ? `
+                <div class="cta-container">
+                  ${data.ctas.map((cta, i) => `
+                    <a href="${cta.url}" class="cta-button ${i === 0 ? 'primary' : 'secondary'}">${escapeHtml(cta.text)} →</a>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `;
+          
+        case 'plain-text':
+          return `
+            <div class="plain-text-container">
+              ${data.plainTitle ? `<h2 class="section-title">${escapeHtml(data.plainTitle)}</h2>` : ''}
+              ${data.plainBody ? `<div class="section-text">${data.plainBody}</div>` : ''}
+            </div>
+          `;
+          
+        case 'cards-carousel':
+          const cards = data.cards || [];
+          const count = data.cardCount || cards.length || 2;
+          const gridCols = `grid-template-columns: repeat(${count}, 1fr);`;
+          return `
+            <div class="cards-container">
+              <div class="cards-header">
+                ${data.carouselTitle ? `<h2 class="section-title">${escapeHtml(data.carouselTitle)}</h2>` : ''}
+                ${data.carouselSubtitle ? `<p class="section-text">${escapeHtml(data.carouselSubtitle)}</p>` : ''}
+              </div>
+              ${cards.length === 0 ? `
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                  No cards added. Edit this section to add cards.
+                </div>
+              ` : `
+                <div class="cards-grid" style="${gridCols}">
+                  ${cards.map(card => `
+                    <div class="card">
+                      ${card.image?.url ? `
+                        <div class="card-image-container">
+                          <img src="${card.image.url}" alt="${card.image.alt || card.title}" class="card-image" />
+                          ${card.distance ? `<div class="distance-badge">${escapeHtml(card.distance)}</div>` : ''}
+                        </div>
+                      ` : ''}
+                      <div class="card-content">
+                        <h3 class="card-title">${escapeHtml(card.title || 'Card Title')}</h3>
+                        ${card.subtitle ? `<p class="card-subtitle">${escapeHtml(card.subtitle)}</p>` : ''}
+                        <div class="card-cta-container">
+                          ${card.cta?.text && card.cta?.url ? `
+                            <a href="${card.cta.url}" class="card-cta">📧 ${escapeHtml(card.cta.text || 'Contact')}</a>
+                          ` : ''}
+                          ${card.cta2?.text && card.cta2?.url ? `
+                            <a href="${card.cta2.url}" class="card-cta primary">${escapeHtml(card.cta2.text || 'Details')} →</a>
+                          ` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          `;
+          
+        case 'map-locations':
+          const locations = data.locations || [];
+          return `
+            <div class="map-container">
+              <div class="map-header">
+                ${data.mapTitle ? `<h2 class="section-title">${escapeHtml(data.mapTitle)}</h2>` : ''}
+                ${data.mapDescription ? `<div class="section-text">${data.mapDescription}</div>` : ''}
+              </div>
+              <div class="map-placeholder" onclick="handleMapClick('${section.id}', event)">
+                <div style="text-align: center; color: #9ca3af; font-size: 16px;">
+                  Click on map to add location coordinates<br/>
+                  <small>Locations: ${locations.length}</small>
+                </div>
+                ${locations.map(loc => `
+                  <div class="location-pin" 
+                       style="left: ${50 + (loc.lng % 20)}%; top: ${50 + (loc.lat % 20)}%;"
+                       title="${escapeHtml(loc.name)}"
+                       onclick="event.stopPropagation(); setCurrentSection('${section.id}')">
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+          
+        case 'text-boxes':
+          const boxes = data.textBoxes || [];
+          const boxCount = data.textBoxesCount || boxes.length || 2;
+          const boxGridCols = `grid-template-columns: repeat(${boxCount}, 1fr);`;
+          return `
+            <div class="text-boxes-container">
+              ${boxes.length === 0 ? `
+                <div style="text-align: center; padding: 40px; color: #9ca3af;">
+                  No text boxes added. Edit this section to add text boxes.
+                </div>
+              ` : `
+                <div class="text-boxes-grid" style="${boxGridCols}">
+                  ${boxes.map(box => `
+                    <div class="text-box ${box.backgroundColor || 'white'}">
+                      ${box.title ? `<h3 class="box-title">${escapeHtml(box.title)}</h3>` : ''}
+                      ${box.text ? `<div class="box-text">${box.text}</div>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          `;
+          
+        default:
+          return '<div>Unknown section type</div>';
+      }
+    }
+
+    function handleMapClick(sectionId, event) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      
+      const section = state.sections.find(s => s.id === sectionId);
+      if (section) {
+        const locations = section.data.locations || [];
+        const newLocation = {
+          id: uuidv4(),
+          name: 'New Location',
+          address: '',
+          lat: y,
+          lng: x
+        };
+        locations.push(newLocation);
+        updateSection(sectionId, { locations });
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Drawer Rendering
+    let quillInstances = {};
+
+    function renderDrawer(section) {
+      const content = document.getElementById('drawerContent');
+      const data = section.data;
+      
+      let html = '';
+      
+      switch (section.type) {
+        case 'hero-image-text':
+          html = `
+            ${renderImageUploader('heroImage', data.heroImage, section.id)}
+            ${renderInput('heroTitle', 'Title', data.heroTitle || '', section.id)}
+            ${renderWysiwyg('heroText', 'Text', data.heroText || '', section.id)}
+            ${renderInput('heroCTA.text', 'CTA Text', data.heroCTA?.text || '', section.id, 'heroCTA')}
+            ${renderInput('heroCTA.url', 'CTA URL', data.heroCTA?.url || '', section.id, 'heroCTA')}
+          `;
+          break;
+          
+        case 'image-text-left':
+        case 'image-text-right':
+          html = `
+            ${renderImageUploader('image', data.image, section.id)}
+            ${renderInput('title', 'Title', data.title || '', section.id)}
+            ${renderWysiwyg('text', 'Text', data.text || '', section.id)}
+            ${renderInput('cta.text', 'CTA Text', data.cta?.text || '', section.id, 'cta')}
+            ${renderInput('cta.url', 'CTA URL', data.cta?.url || '', section.id, 'cta')}
+          `;
+          break;
+          
+        case 'text-cta':
+          const ctas = data.ctas || [];
+          html = `
+            ${renderInput('heading', 'Heading', data.heading || '', section.id)}
+            ${renderWysiwyg('bodyText', 'Body Text', data.bodyText || '', section.id)}
+            <div class="form-group">
+              <label class="form-label">CTAs</label>
+              ${ctas.map((cta, i) => `
+                <div class="cta-fields">
+                  ${renderInput(`ctas.${i}.text`, `CTA ${i + 1} Text`, cta.text || '', section.id)}
+                  ${renderInput(`ctas.${i}.url`, `CTA ${i + 1} URL`, cta.url || '', section.id)}
+                </div>
+              `).join('')}
+              <button class="form-btn" onclick="addCTA('${section.id}')">Add CTA</button>
+            </div>
+          `;
+          break;
+          
+        case 'plain-text':
+          html = `
+            ${renderInput('plainTitle', 'Title', data.plainTitle || '', section.id)}
+            ${renderWysiwyg('plainBody', 'Body Text', data.plainBody || '', section.id)}
+          `;
+          break;
+          
+        case 'cards-carousel':
+          const cards = data.cards || [];
+          const cardCount = data.cardCount || cards.length || 2;
+          html = `
+            ${renderInput('carouselTitle', 'Section Title', data.carouselTitle || '', section.id)}
+            ${renderInput('carouselSubtitle', 'Section Subtitle', data.carouselSubtitle || '', section.id)}
+            ${renderInput('cardCount', 'Number of Cards (2-4)', cardCount, section.id, null, 'number', 2, 4)}
+            ${cards.map((card, i) => `
+              <div class="cta-fields">
+                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 400;">Card ${i + 1}</h3>
+                ${renderImageUploader(`cards.${i}.image`, card.image, section.id, i)}
+                ${renderInput(`cards.${i}.title`, 'Title', card.title || '', section.id, null, null, null, null, i)}
+                ${renderInput(`cards.${i}.subtitle`, 'Subtitle', card.subtitle || '', section.id, null, null, null, null, i)}
+                ${renderInput(`cards.${i}.distance`, 'Distance (e.g., "2.9 km")', card.distance || '', section.id, null, null, null, null, i)}
+                ${renderInput(`cards.${i}.cta.text`, 'CTA 1 Text (Contact)', card.cta?.text || '', section.id, null, null, null, null, i, 'cta')}
+                ${renderInput(`cards.${i}.cta.url`, 'CTA 1 URL', card.cta?.url || '', section.id, null, null, null, null, i, 'cta')}
+                ${renderInput(`cards.${i}.cta2.text`, 'CTA 2 Text (Details)', card.cta2?.text || '', section.id, null, null, null, null, i, 'cta2')}
+                ${renderInput(`cards.${i}.cta2.url`, 'CTA 2 URL', card.cta2?.url || '', section.id, null, null, null, null, i, 'cta2')}
+              </div>
+            `).join('')}
+          `;
+          break;
+          
+        case 'map-locations':
+          const locations = data.locations || [];
+          html = `
+            ${renderInput('mapTitle', 'Section Title', data.mapTitle || '', section.id)}
+            ${renderWysiwyg('mapDescription', 'Description', data.mapDescription || '', section.id)}
+            <div class="form-group">
+              <label class="form-label">Locations</label>
+              ${locations.map((loc, i) => `
+                <div class="cta-fields">
+                  ${renderInput(`locations.${i}.name`, `Location ${i + 1} Name`, loc.name || '', section.id, null, null, null, null, i)}
+                  ${renderInput(`locations.${i}.address`, 'Address', loc.address || '', section.id, null, null, null, null, i)}
+                  ${renderInput(`locations.${i}.lat`, 'Latitude', loc.lat || 0, section.id, null, 'number', null, null, i)}
+                  ${renderInput(`locations.${i}.lng`, 'Longitude', loc.lng || 0, section.id, null, 'number', null, null, i)}
+                </div>
+              `).join('')}
+              <button class="form-btn" onclick="addLocation('${section.id}')">Add Location</button>
+            </div>
+          `;
+          break;
+          
+        case 'text-boxes':
+          const boxes = data.textBoxes || [];
+          const boxesCount = data.textBoxesCount || boxes.length || 2;
+          html = `
+            ${renderInput('textBoxesCount', 'Number of Text Boxes (2-3)', boxesCount, section.id, null, 'number', 2, 3)}
+            ${boxes.map((box, i) => `
+              <div class="cta-fields">
+                <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 400;">Text Box ${i + 1}</h3>
+                <div class="form-group">
+                  <label class="form-label">Background Color</label>
+                  <select class="form-input" onchange="updateTextBox('${section.id}', ${i}, 'backgroundColor', this.value)">
+                    <option value="white" ${box.backgroundColor === 'white' ? 'selected' : ''}>White</option>
+                    <option value="light-grey" ${box.backgroundColor === 'light-grey' ? 'selected' : ''}>Light Grey</option>
+                  </select>
+                </div>
+                ${renderInput(`textBoxes.${i}.title`, 'Title', box.title || '', section.id, null, null, null, null, i)}
+                ${renderWysiwyg(`textBoxes.${i}.text`, 'Text', box.text || '', section.id, i)}
+              </div>
+            `).join('')}
+          `;
+          break;
+      }
+      
+      html += `<button class="form-btn danger" onclick="deleteSection('${section.id}')">Delete Section</button>`;
+      
+      content.innerHTML = html;
+      
+      // Initialize Quill editors
+      setTimeout(() => {
+        initializeQuillEditors(section.id);
+      }, 100);
+    }
+
+    function renderInput(field, label, value, sectionId, parentField = null, type = 'text', min = null, max = null, cardIndex = null, ctaType = null) {
+      const inputId = `input-${sectionId}-${field.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      return `
+        <div class="form-group">
+          <label class="form-label" for="${inputId}">${label}</label>
+          <input 
+            type="${type}" 
+            id="${inputId}"
+            class="form-input" 
+            value="${escapeHtml(String(value))}"
+            ${min !== null ? `min="${min}"` : ''}
+            ${max !== null ? `max="${max}"` : ''}
+            onchange="handleInputChange('${sectionId}', '${field}', this.value, ${cardIndex !== null ? cardIndex : 'null'}, '${ctaType || ''}')"
+            placeholder="Enter ${label.toLowerCase()}"
+          />
+        </div>
+      `;
+    }
+
+    function renderWysiwyg(field, label, value, sectionId, cardIndex = null) {
+      const editorId = `editor-${sectionId}-${field.replace(/[^a-zA-Z0-9]/g, '-')}${cardIndex !== null ? '-' + cardIndex : ''}`;
+      return `
+        <div class="form-group">
+          <label class="form-label">${label}</label>
+          <div id="${editorId}" style="min-height: 150px;"></div>
+        </div>
+      `;
+    }
+
+    function renderImageUploader(field, value, sectionId, cardIndex = null) {
+      const uploadId = `upload-${sectionId}-${field.replace(/[^a-zA-Z0-9]/g, '-')}${cardIndex !== null ? '-' + cardIndex : ''}`;
+      const fileId = `file-${uploadId}`;
+      const urlId = `url-${uploadId}`;
+      
+      return `
+        <div class="form-group">
+          <label class="form-label">Image</label>
+          <div class="upload-container">
+            <div class="upload-area ${value?.url ? 'has-image' : ''}" onclick="document.getElementById('${fileId}').click()">
+              ${value?.url ? `
+                <img src="${value.url}" alt="${value.alt || ''}" class="image-preview" />
+                <button class="remove-image-btn" onclick="event.stopPropagation(); removeImage('${sectionId}', '${field}', ${cardIndex !== null ? cardIndex : 'null'})">×</button>
+              ` : `
+                <div class="upload-text">
+                  <div class="upload-icon">📤</div>
+                  <span>Click to upload or drag and drop</span>
+                  <span style="font-size: 12px; color: #9ca3af;">PNG, JPG, GIF up to 10MB</span>
+                </div>
+              `}
+              <input type="file" id="${fileId}" class="file-input" accept="image/*" onchange="handleImageUpload('${sectionId}', '${field}', this, ${cardIndex !== null ? cardIndex : 'null'})" />
+            </div>
+            <div style="font-size: 12px; color: #56656b; text-align: center;">OR</div>
+            <input 
+              type="text" 
+              id="${urlId}"
+              class="image-url-input" 
+              placeholder="Enter image URL (for cloud storage)"
+              value="${value?.url || ''}"
+              onclick="event.stopPropagation()"
+              onchange="handleImageUrl('${sectionId}', '${field}', this.value, ${cardIndex !== null ? cardIndex : 'null'})"
+            />
+          </div>
+        </div>
+      `;
+    }
+
+    function initializeQuillEditors(sectionId) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      const editors = document.querySelectorAll(`#editor-${sectionId.replace(/[^a-zA-Z0-9]/g, '-')}`);
+      editors.forEach(editorEl => {
+        if (editorEl.quill) return; // Already initialized
+        
+        const field = editorEl.id.replace(`editor-${sectionId.replace(/[^a-zA-Z0-9]/g, '-')}-`, '').replace(/\-\d+$/, '');
+        const cardMatch = editorEl.id.match(/\-(\d+)$/);
+        const cardIndex = cardMatch ? parseInt(cardMatch[1]) : null;
+        
+        const quill = new Quill(editorEl, {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              [{ 'color': [] }, { 'background': [] }],
+              ['link'],
+              ['clean']
+            ]
+          }
+        });
+        
+        editorEl.quill = quill;
+        
+        // Get current value
+        let currentValue = '';
+        if (cardIndex !== null) {
+          const boxes = section.data.textBoxes || [];
+          if (boxes[cardIndex]) {
+            currentValue = boxes[cardIndex].text || '';
+          }
+        } else {
+          currentValue = section.data[field] || '';
+        }
+        
+        quill.root.innerHTML = currentValue;
+        
+        quill.on('text-change', () => {
+          const content = quill.root.innerHTML;
+          if (cardIndex !== null) {
+            const boxes = [...(section.data.textBoxes || [])];
+            if (boxes[cardIndex]) {
+              boxes[cardIndex] = { ...boxes[cardIndex], text: content };
+              updateSection(sectionId, { textBoxes: boxes });
+            }
+          } else {
+            updateSection(sectionId, { [field]: content });
+          }
+        });
+      });
+    }
+
+    function handleInputChange(sectionId, field, value, cardIndex, ctaType) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        if (parts[0] === 'cards' && cardIndex !== null) {
+          const cards = [...(section.data.cards || [])];
+          if (!cards[cardIndex]) return;
+          
+          if (parts[1] === 'image') {
+            // Handled by image uploader
+            return;
+          } else if (parts[1] === 'cta' || parts[1] === 'cta2') {
+            const cta = parts[1];
+            const prop = parts[2];
+            cards[cardIndex] = {
+              ...cards[cardIndex],
+              [cta]: {
+                ...(cards[cardIndex][cta] || {}),
+                [prop]: value
+              }
+            };
+            updateSection(sectionId, { cards });
+          } else {
+            cards[cardIndex] = { ...cards[cardIndex], [parts[1]]: value };
+            updateSection(sectionId, { cards });
+          }
+        } else if (parts[0] === 'textBoxes' && cardIndex !== null) {
+          const boxes = [...(section.data.textBoxes || [])];
+          if (!boxes[cardIndex]) return;
+          boxes[cardIndex] = { ...boxes[cardIndex], [parts[1]]: value };
+          updateSection(sectionId, { textBoxes: boxes });
+        } else if (parts[0] === 'locations' && cardIndex !== null) {
+          const locations = [...(section.data.locations || [])];
+          if (!locations[cardIndex]) return;
+          locations[cardIndex] = { ...locations[cardIndex], [parts[1]]: parseFloat(value) || 0 };
+          updateSection(sectionId, { locations });
+        } else if (parts[0] === 'heroCTA' || parts[0] === 'cta') {
+          const ctaField = parts[0];
+          const prop = parts[1];
+          updateSection(sectionId, {
+            [ctaField]: {
+              ...(section.data[ctaField] || {}),
+              [prop]: value
+            }
+          });
+        } else if (parts[0] === 'ctas') {
+          const ctaIndex = parseInt(parts[1]);
+          const prop = parts[2];
+          const ctas = [...(section.data.ctas || [])];
+          if (!ctas[ctaIndex]) return;
+          ctas[ctaIndex] = { ...ctas[ctaIndex], [prop]: value };
+          updateSection(sectionId, { ctas });
+        }
+      } else {
+        // Handle cardCount and textBoxesCount specially
+        if (field === 'cardCount') {
+          const count = Math.min(4, Math.max(2, parseInt(value) || 2));
+          const cards = section.data.cards || [];
+          const newCards = [...cards];
+          
+          while (newCards.length < count) {
+            newCards.push({
+              id: uuidv4(),
+              title: '',
+              subtitle: '',
+              distance: '',
+              cta: { text: '', url: '' },
+              cta2: { text: '', url: '' }
+            });
+          }
+          while (newCards.length > count) {
+            newCards.pop();
+          }
+          updateSection(sectionId, { cardCount: count, cards: newCards });
+        } else if (field === 'textBoxesCount') {
+          const count = Math.min(3, Math.max(2, parseInt(value) || 2));
+          const boxes = section.data.textBoxes || [];
+          const newBoxes = [...boxes];
+          
+          while (newBoxes.length < count) {
+            newBoxes.push({
+              id: uuidv4(),
+              title: '',
+              text: '',
+              backgroundColor: 'white'
+            });
+          }
+          while (newBoxes.length > count) {
+            newBoxes.pop();
+          }
+          updateSection(sectionId, { textBoxesCount: count, textBoxes: newBoxes });
+        } else {
+          updateSection(sectionId, { [field]: value });
+        }
+      }
+    }
+
+    function handleImageUpload(sectionId, field, fileInput, cardIndex) {
+      const file = fileInput.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageData = {
+          url: e.target.result,
+          alt: file.name,
+          localFile: file
+        };
+        
+        const section = state.sections.find(s => s.id === sectionId);
+        if (!section) return;
+        
+        if (field.includes('cards.') && cardIndex !== null) {
+          const cards = [...(section.data.cards || [])];
+          if (!cards[cardIndex]) return;
+          cards[cardIndex] = { ...cards[cardIndex], image: imageData };
+          updateSection(sectionId, { cards });
+        } else {
+          updateSection(sectionId, { [field]: imageData });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleImageUrl(sectionId, field, url, cardIndex) {
+      if (!url) return;
+      
+      const imageData = {
+        url: url,
+        alt: 'Uploaded image'
+      };
+      
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      if (field.includes('cards.') && cardIndex !== null) {
+        const cards = [...(section.data.cards || [])];
+        if (!cards[cardIndex]) return;
+        cards[cardIndex] = { ...cards[cardIndex], image: imageData };
+        updateSection(sectionId, { cards });
+      } else {
+        updateSection(sectionId, { [field]: imageData });
+      }
+    }
+
+    function removeImage(sectionId, field, cardIndex) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      if (field.includes('cards.') && cardIndex !== null) {
+        const cards = [...(section.data.cards || [])];
+        if (!cards[cardIndex]) return;
+        cards[cardIndex] = { ...cards[cardIndex], image: undefined };
+        updateSection(sectionId, { cards });
+      } else {
+        updateSection(sectionId, { [field]: undefined });
+      }
+    }
+
+    function addCTA(sectionId) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      const ctas = [...(section.data.ctas || [])];
+      ctas.push({ text: '', url: '' });
+      updateSection(sectionId, { ctas });
+    }
+
+    function addLocation(sectionId) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      const locations = [...(section.data.locations || [])];
+      locations.push({
+        id: uuidv4(),
+        name: '',
+        address: '',
+        lat: 0,
+        lng: 0
+      });
+      updateSection(sectionId, { locations });
+    }
+
+    function updateTextBox(sectionId, index, field, value) {
+      const section = state.sections.find(s => s.id === sectionId);
+      if (!section) return;
+      
+      const boxes = [...(section.data.textBoxes || [])];
+      if (!boxes[index]) return;
+      boxes[index] = { ...boxes[index], [field]: value };
+      updateSection(sectionId, { textBoxes: boxes });
+    }
+
+    // Storage Functions
+    function saveToStorage() {
+      try {
+        localStorage.setItem('jll-editor-draft', JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed to save:', e);
+      }
+    }
+
+    function loadFromStorage() {
+      try {
+        const saved = localStorage.getItem('jll-editor-draft');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.sections) {
+            state = parsed;
+            renderSections();
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load:', e);
+      }
+    }
+
+    function saveDraft() {
+      saveToStorage();
+      alert('Draft saved successfully!');
+    }
+
+    function loadDraft() {
+      loadFromStorage();
+      alert('Draft loaded successfully!');
+    }
+
+    // Export Functions
+    function exportHTML(format) {
+      const sortedSections = [...state.sections].sort((a, b) => a.order - b.order);
+      const sectionsHTML = sortedSections.map(renderSection).join('\n');
+      
+      const styles = `
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f6f9fa;
+            color: #01151d;
+            line-height: 1.5;
+          }
+          .section { margin-bottom: 40px; }
+          .hero-container {
+            position: relative;
+            width: 100%;
+            min-height: 500px;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+          .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 104px;
+            text-align: center;
+          }
+          .hero-title {
+            font-size: 48px;
+            font-weight: 400;
+            color: #ffffff;
+            margin: 0 0 24px 0;
+            line-height: 60px;
+            letter-spacing: -0.84px;
+          }
+          .hero-text {
+            font-size: 16px;
+            color: #ffffff;
+            margin-bottom: 32px;
+            max-width: 800px;
+            line-height: 24px;
+          }
+          .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: #01151d;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+          }
+          .image-text-container {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            padding: 88px 60px;
+            width: 100%;
+          }
+          .image-text-image { flex: 1; min-width: 0; }
+          .image-text-image img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            object-fit: cover;
+          }
+          .image-text-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding: 56px;
+          }
+          .section-title {
+            font-size: 32px;
+            font-weight: 400;
+            color: #01151d;
+            margin: 0;
+            line-height: 40px;
+            letter-spacing: -0.16px;
+          }
+          .section-text {
+            font-size: 16px;
+            color: #56656b;
+            line-height: 24px;
+          }
+          .section-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: #01151d;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            width: fit-content;
+          }
+          .text-cta-container {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            padding: 88px 60px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+          }
+          .cta-container {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+          .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            text-decoration: none;
+          }
+          .cta-button.primary {
+            background: #01151d;
+            color: #ffffff;
+          }
+          .cta-button.secondary {
+            background: rgba(30, 105, 118, 0.08);
+            color: #01151d;
+          }
+          .plain-text-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding: 88px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+          }
+          .cards-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 88px 60px;
+            width: 100%;
+          }
+          .cards-header {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
+          .cards-grid {
+            display: grid;
+            gap: 24px;
+            width: 100%;
+          }
+          .card {
+            position: relative;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+          }
+          .card-image-container {
+            position: relative;
+            width: 100%;
+            height: 166px;
+            overflow: hidden;
+            background: #f6f9fa;
+          }
+          .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          .distance-badge {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(173, 216, 230, 0.95);
+            backdrop-filter: blur(8px);
+            color: #01151d;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+          }
+          .card-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+          }
+          .card-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: #01151d;
+            margin: 0;
+            line-height: 24px;
+          }
+          .card-subtitle {
+            font-size: 16px;
+            color: #56656b;
+            margin: 0;
+            line-height: 24px;
+            white-space: pre-line;
+            flex: 1;
+          }
+          .card-cta-container {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+            padding-top: 4px;
+          }
+          .card-cta {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 14px 24px;
+            border: 1px solid #ced5d8;
+            background: #ffffff;
+            color: #01151d;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            min-height: 48px;
+          }
+          .card-cta.primary {
+            background: #01151d;
+            color: #ffffff;
+            border-color: #01151d;
+          }
+          .map-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 88px 60px;
+          }
+          .map-header {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 852px;
+            margin: 0 auto;
+            text-align: center;
+          }
+          .map-placeholder {
+            width: 100%;
+            height: 600px;
+            background: #eaeff1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .text-boxes-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 88px 60px;
+            width: 100%;
+          }
+          .text-boxes-grid {
+            display: grid;
+            gap: 40px;
+            width: 100%;
+          }
+          .text-box {
+            position: relative;
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid #ced5d8;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+          }
+          .text-box.white { background: #ffffff; }
+          .text-box.light-grey { background: #f6f9fa; }
+          .box-title {
+            font-size: 24px;
+            font-weight: 400;
+            color: #01151d;
+            margin: 0;
+            line-height: 32px;
+          }
+          .box-text {
+            font-size: 16px;
+            color: #56656b;
+            line-height: 24px;
+          }
+          @media (max-width: 768px) {
+            .image-text-container { flex-direction: column; }
+            .hero-overlay { padding: 40px 24px; }
+            .hero-title { font-size: 32px; line-height: 40px; }
+            .cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .text-boxes-grid { grid-template-columns: 1fr; }
+          }
+          @media (max-width: 480px) {
+            .cards-grid { grid-template-columns: 1fr; }
+          }
+        </style>
+      `;
+      
+      if (format === 'standalone') {
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JLL Content Page</title>
+  ${styles}
+</head>
+<body>
+  <div style="max-width: 1512px; margin: 0 auto; background: #ffffff;">
+    ${sectionsHTML}
+  </div>
+</body>
+</html>`;
+        
+        downloadFile(html, 'jll-content-page.html', 'text/html');
+      } else {
+        const template = `<!-- JLL Content Template -->
+<!-- Replace this with your page structure -->
+${sectionsHTML}`;
+        
+        downloadFile(template, 'jll-content-template.html', 'text/html');
+      }
+    }
+
+    function downloadFile(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -91,6 +91,8 @@ export interface LocationData {
   address: string;
   lat: number;
   lng: number;
+  propertyCount?: number;
+  cta?: CTA;
 }
 
 export interface EditorState {
