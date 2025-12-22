@@ -6,9 +6,16 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 88px 60px;
-  max-width: 1200px;
+  padding: 88px 104px;
+  max-width: 1512px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 40px 24px;
+    gap: 20px;
+  }
 `;
 
 const Title = styled.h2`

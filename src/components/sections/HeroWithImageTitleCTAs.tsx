@@ -8,10 +8,15 @@ const Container = styled.div`
   gap: 40px;
   align-items: center;
   width: 100%;
-  padding: 88px 60px;
+  max-width: 1512px;
+  margin: 0 auto;
+  padding: 88px 104px;
+  box-sizing: border-box;
   
   @media (max-width: 768px) {
     flex-direction: column;
+    padding: 40px 24px;
+    gap: 32px;
   }
 `;
 
@@ -19,17 +24,26 @@ const LeftContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 0;
   min-width: 0;
+  max-width: 50%;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    width: 100%;
+  }
 `;
 
 const Title = styled.h1`
   font-size: 72px;
   font-weight: 200;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin: 0;
   line-height: 1.1;
   letter-spacing: -1.44px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   
   @media (max-width: 1024px) {
     font-size: 56px;
@@ -46,14 +60,22 @@ const Separator = styled.div`
   width: 100%;
   height: 1px;
   background: #ced5d8;
-  margin: 8px 0;
+  margin: 24px 0;
+  
+  @media (max-width: 768px) {
+    margin: 16px 0;
+  }
 `;
 
 const CTAContainer = styled.div`
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: 0;
+  
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
 `;
 
 const CTAButton = styled.a`
@@ -66,10 +88,18 @@ const CTAButton = styled.a`
   text-decoration: none;
   border-radius: 6px;
   font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 400;
   transition: all 0.2s ease;
+  white-space: nowrap;
   
   &:hover {
     background: #dfe5e8;
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 12px 20px;
   }
 `;
 
@@ -77,10 +107,10 @@ const ImageContainer = styled.div`
   flex: 1;
   min-width: 0;
   max-width: 50%;
+  width: 100%;
   
   @media (max-width: 768px) {
     max-width: 100%;
-    width: 100%;
   }
 `;
 
@@ -89,6 +119,7 @@ const Image = styled.img`
   height: auto;
   border-radius: 8px;
   object-fit: cover;
+  display: block;
 `;
 
 
@@ -113,7 +144,7 @@ const HeroWithImageTitleCTAs: React.FC<HeroWithImageTitleCTAsProps> = ({ data })
         {hasCTAs && (
           <CTAContainer>
             {ctas.filter(cta => cta.text && cta.url).map((cta, index) => (
-              <CTAButton key={index} href={cta.url}>
+              <CTAButton key={index} href={cta.url || '#'}>
                 {cta.text}
                 <span>→</span>
               </CTAButton>

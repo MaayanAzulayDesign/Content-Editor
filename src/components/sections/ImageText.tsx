@@ -8,10 +8,15 @@ const Container = styled.div`
   gap: 40px;
   align-items: center;
   width: 100%;
-  padding: 88px 60px;
+  max-width: 1512px;
+  margin: 0 auto;
+  padding: 88px 104px;
+  box-sizing: border-box;
   
   @media (max-width: 768px) {
     flex-direction: column;
+    padding: 40px 24px;
+    gap: 32px;
   }
 `;
 
@@ -33,6 +38,12 @@ const ContentContainer = styled.div`
   flex-direction: column;
   gap: 24px;
   padding: 56px;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 24px 0;
+    gap: 20px;
+  }
 `;
 
 const Title = styled.h2`

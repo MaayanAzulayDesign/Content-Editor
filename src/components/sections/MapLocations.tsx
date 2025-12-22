@@ -24,7 +24,16 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 40px;
-  padding: 88px 60px;
+  padding: 88px 104px;
+  max-width: 1512px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 40px 24px;
+    gap: 32px;
+  }
 `;
 
 const Header = styled.div`
@@ -62,11 +71,17 @@ const MapContainer = styled.div`
   overflow: hidden;
   position: relative;
   background: #eaeff1;
-  
+  box-sizing: border-box;
+
   .leaflet-container {
     height: 100%;
     width: 100%;
     border-radius: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    height: 400px;
+    border-radius: 0;
   }
 `;
 

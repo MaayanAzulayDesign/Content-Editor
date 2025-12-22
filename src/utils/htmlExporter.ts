@@ -74,8 +74,11 @@ const JLL_STYLES = `
       display: flex;
       gap: 40px;
       align-items: center;
-      padding: 88px 60px;
+      padding: 88px 104px;
+      max-width: 1512px;
+      margin: 0 auto;
       width: 100%;
+      box-sizing: border-box;
     }
     
     .image-text-image {
@@ -143,10 +146,12 @@ const JLL_STYLES = `
       display: flex;
       flex-direction: column;
       gap: 32px;
-      padding: 88px 60px;
+      padding: 88px 104px;
       text-align: center;
-      max-width: 1200px;
+      max-width: 1512px;
       margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .cta-container {
@@ -160,16 +165,22 @@ const JLL_STYLES = `
       display: flex;
       flex-direction: column;
       gap: 24px;
-      padding: 88px 60px;
-      max-width: 1200px;
+      padding: 88px 104px;
+      max-width: 1512px;
       margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .cards-container {
       display: grid;
       grid-template-columns: repeat(var(--card-count, 2), 1fr);
       gap: 24px;
-      padding: 88px 60px;
+      padding: 88px 104px;
+      max-width: 1512px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     @media (max-width: 1024px) {
@@ -224,19 +235,95 @@ const JLL_STYLES = `
       height: 600px;
       background: #eaeff1;
       border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 88px 60px;
+      box-sizing: border-box;
     }
     
     @media (max-width: 768px) {
       .image-text-container {
         flex-direction: column;
+        padding: 40px 24px;
+        gap: 32px;
+      }
+      
+      .image-text-content {
+        padding: 24px 0;
+        gap: 20px;
+      }
+      
+      .text-cta-container {
+        padding: 40px 24px;
+        gap: 24px;
+      }
+      
+      .plain-text-container {
+        padding: 40px 24px;
+        gap: 20px;
+      }
+      
+      .cards-container {
+        padding: 40px 24px;
+        gap: 32px;
+      }
+      
+      .map-container {
+        height: 400px;
+        border-radius: 0;
+      }
+      
+      .hero-container {
+        border-radius: 0;
+        min-height: 400px;
       }
       
       .hero-overlay {
         padding: 40px 24px;
+      }
+      
+      .hero-title {
+        font-size: 32px;
+        line-height: 40px;
+        letter-spacing: -0.64px;
+        margin: 0 0 16px 0;
+      }
+      
+      .hero-text {
+        font-size: 14px;
+        margin-bottom: 24px;
+        max-width: 100%;
+      }
+      
+      .hero-with-image-title-ctas-container {
+        padding: 40px 24px;
+        gap: 32px;
+      }
+      
+      .hero-with-image-title-ctas-title {
+        font-size: 48px;
+        letter-spacing: -0.96px;
+      }
+      
+      .hero-with-image-title-ctas-separator {
+        margin: 16px 0;
+      }
+      
+      .hero-with-image-title-ctas-image-container {
+        max-width: 100%;
+        width: 100%;
+      }
+      
+      .hero-with-image-title-ctas-cta-button {
+        flex: 1;
+        min-width: unset;
+      }
+      
+      [id^="text-boxes-"] {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+      }
+      
+      [id^="cards-"] {
+        gap: 16px !important;
+      }
       }
       
       .hero-title {
@@ -263,43 +350,61 @@ function renderSection(section: Section): string {
 
     case 'hero-image-title-ctas':
       const heroCTAs = section.data.heroCTAs || [];
+      const sectionId = `hero-title-ctas-${section.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
-        <div class="section" style="display: flex; gap: 40px; align-items: center; width: 100%; padding: 88px 60px; box-sizing: border-box;">
-          <div style="flex: 1; display: flex; flex-direction: column; gap: 24px; min-width: 0;">
-            ${section.data.heroTitleLarge ? `<h1 style="font-size: 92px; font-weight: 400; color: #01151d; margin: 0; line-height: 1.1; letter-spacing: -1.84px;">${section.data.heroTitleLarge}</h1>` : ''}
-            ${section.data.heroTitleLarge ? `<div style="width: 100%; height: 1px; background: #ced5d8; margin: 8px 0;"></div>` : ''}
+        <div class="section ${sectionId}" style="display: flex; gap: 40px; align-items: center; width: 100%; max-width: 1512px; margin: 0 auto; padding: 88px 104px; box-sizing: border-box;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0; max-width: 50%;">
+            ${section.data.heroTitleLarge ? `<h1 style="font-size: 72px; font-weight: 200; font-family: 'Source Sans Pro', sans-serif; color: #01151d; margin: 0; line-height: 1.1; letter-spacing: -1.44px; word-wrap: break-word; overflow-wrap: break-word;">${section.data.heroTitleLarge}</h1>` : ''}
+            ${section.data.heroTitleLarge ? `<div style="width: 100%; height: 1px; background: #ced5d8; margin: 24px 0;"></div>` : ''}
             ${heroCTAs.length > 0 ? `
-              <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;">
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 0;">
                 ${heroCTAs.map((cta) => cta.text && cta.url ? `
-                  <a href="${cta.url}" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: #eaeff1; color: #34404b; text-decoration: none; border-radius: 6px; font-size: 16px; transition: all 0.2s ease;">${cta.text} →</a>
+                  <a href="${cta.url}" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: #eaeff1; color: #34404b; text-decoration: none; border-radius: 6px; font-size: 16px; font-family: 'Source Sans Pro', sans-serif; font-weight: 400; transition: all 0.2s ease; white-space: nowrap;">${cta.text} →</a>
                 ` : '').join('')}
               </div>
             ` : ''}
           </div>
           ${section.data.heroImageRight?.url ? `
-            <div style="flex: 1; min-width: 0; max-width: 50%;">
-              <img src="${section.data.heroImageRight.url}" alt="${section.data.heroImageRight.alt || 'Hero image'}" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover;" />
+            <div style="flex: 1; min-width: 0; max-width: 50%; width: 100%;">
+              <img src="${section.data.heroImageRight.url}" alt="${section.data.heroImageRight.alt || 'Hero image'}" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; display: block;" />
             </div>
           ` : ''}
         </div>
         <style>
-          @media (max-width: 1024px) {
-            .section h1[style*="font-size: 92px"] {
-              font-size: 72px !important;
-              letter-spacing: -1.44px !important;
-            }
+          .${sectionId} h1 {
+            font-size: 72px;
+            font-weight: 200;
+            letter-spacing: -1.44px;
           }
-          @media (max-width: 768px) {
-            .section[style*="display: flex"] {
-              flex-direction: column !important;
-            }
-            .section h1[style*="font-size: 92px"] {
+          @media (max-width: 1024px) {
+            .${sectionId} h1 {
               font-size: 56px !important;
               letter-spacing: -1.12px !important;
             }
-            .section div[style*="max-width: 50%"] {
+          }
+          @media (max-width: 768px) {
+            .${sectionId} {
+              flex-direction: column !important;
+              padding: 40px 24px !important;
+              gap: 32px !important;
+            }
+            .${sectionId} h1 {
+              font-size: 48px !important;
+              letter-spacing: -0.96px !important;
+            }
+            .${sectionId} div[style*="max-width: 50%"] {
               max-width: 100% !important;
               width: 100% !important;
+            }
+            .${sectionId} a {
+              font-size: 14px !important;
+              padding: 12px 20px !important;
+            }
+            .${sectionId} div[style*="gap: 16px"] {
+              gap: 12px !important;
+            }
+            .${sectionId} div[style*="margin: 24px 0"] {
+              margin: 16px 0 !important;
             }
           }
         </style>
@@ -330,7 +435,7 @@ function renderSection(section: Section): string {
 
     case 'text-cta':
       return `
-        <div class="section" style="display: flex; flex-direction: column; gap: 32px; padding: 88px 60px; text-align: center; max-width: 1200px; margin: 0 auto;">
+        <div class="section" style="display: flex; flex-direction: column; gap: 32px; padding: 88px 104px; text-align: center; max-width: 1512px; margin: 0 auto; width: 100%; box-sizing: border-box;">
           ${section.data.heading ? `<h2 style="font-size: 32px; font-weight: 400; color: #01151d; margin: 0; line-height: 40px; letter-spacing: -0.16px;">${section.data.heading}</h2>` : ''}
           ${section.data.bodyText ? `<div style="font-size: 16px; color: #56656b; line-height: 24px; max-width: 800px; margin: 0 auto;">${section.data.bodyText}</div>` : ''}
           ${section.data.ctas && section.data.ctas.length > 0 ? `
@@ -355,7 +460,7 @@ function renderSection(section: Section): string {
       const cardCount = section.data.cardCount || (section.data.cards || []).length || 2;
       const cardsId = `cards-${section.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
-        <div class="section" style="padding: 88px 60px; max-width: 100%; box-sizing: border-box;">
+        <div class="section" style="padding: 88px 104px; max-width: 1512px; margin: 0 auto; width: 100%; box-sizing: border-box;">
           ${section.data.carouselTitle ? `<h2 class="section-title" style="font-size: 32px; font-weight: 400; color: #01151d; margin: 0 0 16px 0;">${section.data.carouselTitle}</h2>` : ''}
           ${section.data.carouselSubtitle ? `<div class="section-text" style="font-size: 16px; color: #56656b; margin: 0 0 40px 0;">${section.data.carouselSubtitle}</div>` : ''}
           <div id="${cardsId}" class="cards-container" style="display: grid; grid-template-columns: repeat(${cardCount}, 1fr); gap: 24px; width: 100%; box-sizing: border-box;">
@@ -502,7 +607,7 @@ function renderSection(section: Section): string {
       const boxCount = section.data.textBoxesCount || boxes.length || 2;
       const boxesId = `text-boxes-${section.id.replace(/[^a-zA-Z0-9]/g, '-')}`;
       return `
-        <div class="section" style="padding: 88px 60px; width: 100%; box-sizing: border-box;">
+        <div class="section" style="padding: 88px 104px; max-width: 1512px; margin: 0 auto; width: 100%; box-sizing: border-box;">
           <div id="${boxesId}" style="display: grid; grid-template-columns: repeat(${boxCount}, 1fr); gap: 40px; width: 100%; box-sizing: border-box;">
             ${boxes.map(box => `
               <div style="padding: 32px; border-radius: 12px; border: 1px solid #ced5d8; background: ${box.backgroundColor === 'light-grey' ? '#f6f9fa' : '#ffffff'}; display: flex; flex-direction: column; gap: 16px; width: 100%; box-sizing: border-box;">

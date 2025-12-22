@@ -6,9 +6,17 @@ import ImagePlaceholder from '../ImagePlaceholder';
 const HeroContainer = styled.div`
   position: relative;
   width: 100%;
+  max-width: 1512px;
+  margin: 0 auto;
   min-height: 500px;
   border-radius: 8px;
   overflow: hidden;
+  box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    border-radius: 0;
+    min-height: 400px;
+  }
 `;
 
 const HeroImage = styled.img`
@@ -33,19 +41,32 @@ const HeroOverlay = styled.div`
   justify-content: center;
   padding: 104px;
   text-align: center;
+  
+  @media (max-width: 768px) {
+    padding: 40px 24px;
+  }
 `;
 
 const HeroTitle = styled.h1`
   font-size: 48px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #ffffff;
   margin: 0 0 24px 0;
   line-height: 60px;
   letter-spacing: -0.84px;
+  
+  @media (max-width: 768px) {
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: -0.64px;
+    margin: 0 0 16px 0;
+  }
 `;
 
 const HeroText = styled.div`
   font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #ffffff;
   margin-bottom: 32px;
   max-width: 800px;
@@ -57,6 +78,12 @@ const HeroText = styled.div`
     &:last-child {
       margin-bottom: 0;
     }
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+    margin-bottom: 24px;
+    max-width: 100%;
   }
 `;
 

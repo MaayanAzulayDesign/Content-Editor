@@ -247,7 +247,7 @@ const HeroImageTitleCTAsWireframe = styled.div`
     position: absolute;
     bottom: 12px;
     left: 4px;
-    width: 25%;
+    width: 22%;
     height: 7px;
     background: #d1d5db;
     border-radius: 3px;
@@ -257,8 +257,8 @@ const HeroImageTitleCTAsWireframe = styled.div`
     content: '';
     position: absolute;
     bottom: 12px;
-    left: calc(25% + 4px);
-    width: 25%;
+    left: calc(22% + 10px);
+    width: 22%;
     height: 7px;
     background: #d1d5db;
     border-radius: 3px;
