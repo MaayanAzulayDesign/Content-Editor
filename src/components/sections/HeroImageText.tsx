@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SectionData } from '../../types';
+import ImagePlaceholder from '../ImagePlaceholder';
 
 const HeroContainer = styled.div`
   position: relative;
@@ -83,19 +84,25 @@ interface HeroImageTextProps {
 const HeroImageText: React.FC<HeroImageTextProps> = ({ data }) => {
   return (
     <HeroContainer>
-      {data.heroImage?.url && <HeroImage src={data.heroImage.url} alt={data.heroImage.alt} />}
-      <HeroOverlay>
-        {data.heroTitle && <HeroTitle>{data.heroTitle}</HeroTitle>}
-        {data.heroText && (
-          <HeroText dangerouslySetInnerHTML={{ __html: data.heroText }} />
-        )}
-        {data.heroCTA?.text && data.heroCTA?.url && (
-          <CTAButton href={data.heroCTA.url}>
-            {data.heroCTA.text}
-            <span>→</span>
-          </CTAButton>
-        )}
-      </HeroOverlay>
+      {data.heroImage?.url ? (
+        <>
+          <HeroImage src={data.heroImage.url} alt={data.heroImage.alt} />
+          <HeroOverlay>
+            {data.heroTitle && <HeroTitle>{data.heroTitle}</HeroTitle>}
+            {data.heroText && (
+              <HeroText dangerouslySetInnerHTML={{ __html: data.heroText }} />
+            )}
+            {data.heroCTA?.text && data.heroCTA?.url && (
+              <CTAButton href={data.heroCTA.url}>
+                {data.heroCTA.text}
+                <span>→</span>
+              </CTAButton>
+            )}
+          </HeroOverlay>
+        </>
+      ) : (
+        <ImagePlaceholder text="Add hero image" minHeight="500px" />
+      )}
     </HeroContainer>
   );
 };

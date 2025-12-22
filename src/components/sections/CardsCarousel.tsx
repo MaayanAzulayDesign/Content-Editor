@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SectionData } from '../../types';
+import ImagePlaceholder from '../ImagePlaceholder';
 
 const Container = styled.div`
   position: relative;
@@ -189,12 +190,16 @@ const CardsCarousel: React.FC<CardsCarouselProps> = ({ data }) => {
       <CardsGrid count={count}>
         {cards.map((card) => (
           <Card key={card.id}>
-            {card.image?.url && (
+            {card.image?.url ? (
               <CardImageContainer>
                 <CardImage src={card.image.url} alt={card.image.alt || card.title} />
                 {card.distance && (
                   <DistanceBadge>{card.distance}</DistanceBadge>
                 )}
+              </CardImageContainer>
+            ) : (
+              <CardImageContainer>
+                <ImagePlaceholder text="Add card image" minHeight="166px" />
               </CardImageContainer>
             )}
             <CardContent>

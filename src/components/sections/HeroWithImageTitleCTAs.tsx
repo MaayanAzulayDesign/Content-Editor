@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SectionData } from '../../types';
+import ImagePlaceholder from '../ImagePlaceholder';
 
 const Container = styled.div`
   display: flex;
@@ -23,21 +24,21 @@ const LeftContent = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 92px;
-  font-weight: 400;
+  font-size: 72px;
+  font-weight: 200;
   color: #01151d;
   margin: 0;
   line-height: 1.1;
-  letter-spacing: -1.84px;
+  letter-spacing: -1.44px;
   
   @media (max-width: 1024px) {
-    font-size: 72px;
-    letter-spacing: -1.44px;
+    font-size: 56px;
+    letter-spacing: -1.12px;
   }
   
   @media (max-width: 768px) {
-    font-size: 56px;
-    letter-spacing: -1.12px;
+    font-size: 48px;
+    letter-spacing: -0.96px;
   }
 `;
 
@@ -90,24 +91,6 @@ const Image = styled.img`
   object-fit: cover;
 `;
 
-const PlaceholderImage = styled.div`
-  width: 100%;
-  min-height: 400px;
-  background: #f6f9fa;
-  border: 2px dashed #ced5d8;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 14px;
-  text-align: center;
-  padding: 40px;
-  
-  @media (max-width: 768px) {
-    min-height: 300px;
-  }
-`;
 
 interface HeroWithImageTitleCTAsProps {
   data: SectionData;
@@ -142,12 +125,7 @@ const HeroWithImageTitleCTAs: React.FC<HeroWithImageTitleCTAsProps> = ({ data })
         {data.heroImageRight?.url ? (
           <Image src={data.heroImageRight.url} alt={data.heroImageRight.alt || 'Hero image'} />
         ) : (
-          <PlaceholderImage>
-            <div>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>📷</div>
-              <div>Add image on the right</div>
-            </div>
-          </PlaceholderImage>
+          <ImagePlaceholder text="Add image on the right" />
         )}
       </ImageContainer>
     </Container>

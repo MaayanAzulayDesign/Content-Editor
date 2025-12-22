@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SectionData } from '../../types';
+import ImagePlaceholder from '../ImagePlaceholder';
 
 const Container = styled.div`
   display: flex;
@@ -83,8 +84,10 @@ interface ImageTextProps {
 const ImageText: React.FC<ImageTextProps> = ({ data, imagePosition }) => {
   const imageSection = (
     <ImageContainer>
-      {data.image?.url && (
+      {data.image?.url ? (
         <Image src={data.image.url} alt={data.image.alt || 'Section image'} />
+      ) : (
+        <ImagePlaceholder text="Add image" />
       )}
     </ImageContainer>
   );
