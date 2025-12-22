@@ -64,6 +64,7 @@ const UploadText = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #56656b;
   text-align: center;
 `;
@@ -83,6 +84,7 @@ const ImageUrlInput = styled.input`
   border: 1px solid #ced5d8;
   border-radius: 6px;
   font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   background: #ffffff;
   

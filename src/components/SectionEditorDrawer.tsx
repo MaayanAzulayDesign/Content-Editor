@@ -52,6 +52,7 @@ const DrawerHeader = styled.div`
 const DrawerTitle = styled.h2`
   font-size: 20px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin: 0;
 `;
@@ -89,6 +90,7 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 14px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
 `;
 
@@ -97,6 +99,22 @@ const Input = styled.input`
   border: 1px solid #ced5d8;
   border-radius: 6px;
   font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
+  color: #01151d;
+  background: #ffffff;
+  
+  &:focus {
+    outline: none;
+    border-color: #01151d;
+  }
+`;
+
+const Select = styled.select`
+  padding: 10px 12px;
+  border: 1px solid #ced5d8;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   background: #ffffff;
   
@@ -124,6 +142,7 @@ const Button = styled.button`
   border: none;
   border-radius: 6px;
   font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
   cursor: pointer;
   margin-top: 16px;
   
@@ -224,6 +243,76 @@ const SectionEditorDrawer: React.FC = () => {
                 placeholder="https://..."
               />
             </FormGroup>
+          </>
+        );
+
+      case 'hero-image-title-ctas':
+        const heroCTAs = formData.heroCTAs || [{ text: '', url: '' }];
+        const ctaCount = heroCTAs.length;
+        return (
+          <>
+            <FormGroup>
+              <Label>Image (Right Side)</Label>
+              <ImageUploader
+                value={formData.heroImageRight}
+                onChange={(image) => handleChange('heroImageRight', image)}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Title</Label>
+              <Input
+                value={formData.heroTitleLarge || ''}
+                onChange={(e) => handleChange('heroTitleLarge', e.target.value)}
+                placeholder="Enter large title (92px)"
+              />
+              <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                A separator line will appear below the title
+              </div>
+            </FormGroup>
+            <FormGroup>
+              <Label>Number of CTAs</Label>
+              <Select
+                value={ctaCount}
+                onChange={(e) => {
+                  const count = parseInt(e.target.value);
+                  const newCTAs = Array.from({ length: count }, (_, i) => 
+                    heroCTAs[i] || { text: '', url: '' }
+                  );
+                  handleChange('heroCTAs', newCTAs);
+                }}
+              >
+                <option value={1}>1 CTA</option>
+                <option value={2}>2 CTAs</option>
+              </Select>
+            </FormGroup>
+            {heroCTAs.map((cta, index) => (
+              <React.Fragment key={index}>
+                <FormGroup>
+                  <Label>CTA {index + 1} Text</Label>
+                  <Input
+                    value={cta.text || ''}
+                    onChange={(e) => {
+                      const newCTAs = [...heroCTAs];
+                      newCTAs[index] = { ...newCTAs[index], text: e.target.value };
+                      handleChange('heroCTAs', newCTAs);
+                    }}
+                    placeholder="Button text"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label>CTA {index + 1} URL</Label>
+                  <Input
+                    value={cta.url || ''}
+                    onChange={(e) => {
+                      const newCTAs = [...heroCTAs];
+                      newCTAs[index] = { ...newCTAs[index], url: e.target.value };
+                      handleChange('heroCTAs', newCTAs);
+                    }}
+                    placeholder="https://..."
+                  />
+                </FormGroup>
+              </React.Fragment>
+            ))}
           </>
         );
 

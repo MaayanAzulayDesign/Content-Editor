@@ -64,15 +64,15 @@ const CTAButton = styled.a`
   align-items: center;
   gap: 8px;
   padding: 14px 24px;
-  background: #01151d;
-  color: #ffffff;
+  background: #eaeff1;
+  color: #34404b;
   text-decoration: none;
   border-radius: 6px;
   font-size: 16px;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: #1a2d35;
+    background: #dfe5e8;
   }
 `;
 

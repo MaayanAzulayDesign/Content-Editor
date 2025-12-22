@@ -5,7 +5,7 @@ import { readFileAsText, parseHTMLToState } from '../utils/fileUtils';
 
 interface EditorContextType {
   state: EditorState;
-  addSection: (type: SectionType) => void;
+  addSection: (type: SectionType, insertAfter?: string) => void;
   updateSection: (id: string, data: Partial<SectionData>) => void;
   deleteSection: (id: string) => void;
   reorderSections: (sections: Section[]) => void;
@@ -14,6 +14,7 @@ interface EditorContextType {
   closeDrawer: () => void;
   openLibrary: () => void;
   closeLibrary: () => void;
+  updatePagePath: (path: string) => void;
   saveDraft: () => void;
   loadDraft: () => void;
   loadDraftFromFile: (file: File) => Promise<boolean>;
@@ -22,7 +23,7 @@ interface EditorContextType {
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
 type EditorAction =
-  | { type: 'ADD_SECTION'; payload: { type: SectionType } }
+  | { type: 'ADD_SECTION'; payload: { type: SectionType; insertAfter?: string } }
   | { type: 'UPDATE_SECTION'; payload: { id: string; data: Partial<SectionData> } }
   | { type: 'DELETE_SECTION'; payload: { id: string } }
   | { type: 'REORDER_SECTIONS'; payload: { sections: Section[] } }
@@ -31,6 +32,7 @@ type EditorAction =
   | { type: 'CLOSE_DRAWER' }
   | { type: 'OPEN_LIBRARY' }
   | { type: 'CLOSE_LIBRARY' }
+  | { type: 'UPDATE_PAGE_PATH'; payload: { path: string } }
   | { type: 'LOAD_STATE'; payload: { state: EditorState } };
 
 const initialState: EditorState = {
@@ -38,6 +40,7 @@ const initialState: EditorState = {
   currentSectionId: null,
   isDrawerOpen: false,
   isLibraryOpen: false,
+  pagePath: '',
 };
 
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -61,12 +64,46 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
               { id: uuidv4(), title: '', text: '', backgroundColor: 'white' },
               { id: uuidv4(), title: '', text: '', backgroundColor: 'white' }
             ]}
+          : action.payload.type === 'hero-image-title-ctas'
+          ? { heroTitleLarge: '', heroCTAs: [{ text: '', url: '' }] }
           : {},
-        order: state.sections.length,
+        order: 0,
       };
+      
+      let updatedSections: Section[];
+      const sortedSections = [...state.sections].sort((a, b) => a.order - b.order);
+      
+      if (action.payload.insertAfter === null) {
+        // Insert at the beginning
+        newSection.order = sortedSections.length > 0 ? sortedSections[0].order - 1 : 0;
+        // Shift all existing sections down
+        updatedSections = sortedSections.map(s => ({ ...s, order: s.order + 1 }));
+        updatedSections.unshift(newSection);
+      } else if (action.payload.insertAfter) {
+        // Insert after specified section
+        const insertIndex = sortedSections.findIndex(s => s.id === action.payload.insertAfter);
+        if (insertIndex >= 0) {
+          const afterSection = sortedSections[insertIndex];
+          newSection.order = afterSection.order + 1;
+          // Reorder all sections after the insertion point
+          updatedSections = sortedSections.map(s => 
+            s.order > afterSection.order ? { ...s, order: s.order + 1 } : s
+          );
+          updatedSections.splice(insertIndex + 1, 0, newSection);
+        } else {
+          // Section not found, add to end
+          newSection.order = sortedSections.length > 0 ? sortedSections[sortedSections.length - 1].order + 1 : 0;
+          updatedSections = [...sortedSections, newSection];
+        }
+      } else {
+        // Add to end (insertAfter is undefined)
+        newSection.order = sortedSections.length > 0 ? sortedSections[sortedSections.length - 1].order + 1 : 0;
+        updatedSections = [...sortedSections, newSection];
+      }
+      
       return {
         ...state,
-        sections: [...state.sections, newSection],
+        sections: updatedSections,
         currentSectionId: newSection.id,
         isDrawerOpen: true,
         isLibraryOpen: false,
@@ -114,6 +151,9 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case 'CLOSE_LIBRARY':
       return { ...state, isLibraryOpen: false };
     
+    case 'UPDATE_PAGE_PATH':
+      return { ...state, pagePath: action.payload.path };
+    
     case 'LOAD_STATE':
       return action.payload.state;
     
@@ -125,8 +165,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 export function EditorProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(editorReducer, initialState);
 
-  const addSection = (type: SectionType) => {
-    dispatch({ type: 'ADD_SECTION', payload: { type } });
+  const addSection = (type: SectionType, insertAfter?: string) => {
+    dispatch({ type: 'ADD_SECTION', payload: { type, insertAfter } });
   };
 
   const updateSection = (id: string, data: Partial<SectionData>) => {
@@ -159,6 +199,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const closeLibrary = () => {
     dispatch({ type: 'CLOSE_LIBRARY' });
+  };
+
+  const updatePagePath = (path: string) => {
+    dispatch({ type: 'UPDATE_PAGE_PATH', payload: { path } });
   };
 
   const saveDraft = () => {
@@ -208,6 +252,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
         closeDrawer,
         openLibrary,
         closeLibrary,
+        updatePagePath,
         saveDraft,
         loadDraft,
         loadDraftFromFile,

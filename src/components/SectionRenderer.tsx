@@ -1,6 +1,7 @@
 import React from 'react';
 import { Section } from '../types';
 import HeroImageText from './sections/HeroImageText';
+import HeroWithImageTitleCTAs from './sections/HeroWithImageTitleCTAs';
 import ImageText from './sections/ImageText';
 import TextCTA from './sections/TextCTA';
 import CardsCarousel from './sections/CardsCarousel';
@@ -16,6 +17,8 @@ const SectionRenderer: React.FC<SectionRendererProps> = ({ section }) => {
   switch (section.type) {
     case 'hero-image-text':
       return <HeroImageText data={section.data} />;
+    case 'hero-image-title-ctas':
+      return <HeroWithImageTitleCTAs data={section.data} />;
     case 'image-text-left':
       return <ImageText data={section.data} imagePosition="left" />;
     case 'image-text-right':

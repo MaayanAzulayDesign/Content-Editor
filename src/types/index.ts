@@ -1,5 +1,6 @@
 export type SectionType = 
   | 'hero-image-text'
+  | 'hero-image-title-ctas'
   | 'image-text-left'
   | 'image-text-right'
   | 'text-cta'
@@ -34,6 +35,11 @@ export interface SectionData {
   heroTitle?: string;
   heroText?: string;
   heroCTA?: CTA;
+  
+  // Hero with image, title & CTAs (image on right)
+  heroTitleLarge?: string;
+  heroCTAs?: CTA[];
+  heroImageRight?: ImageData;
   
   // Image + Text sections
   image?: ImageData;
@@ -100,5 +106,6 @@ export interface EditorState {
   currentSectionId: string | null;
   isDrawerOpen: boolean;
   isLibraryOpen: boolean;
+  pagePath?: string; // e.g., "/services/letting"
 }
 

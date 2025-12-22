@@ -53,22 +53,12 @@ const CTAButton = styled.a<{ variant?: 'primary' | 'secondary' }>`
   font-size: 16px;
   text-decoration: none;
   transition: all 0.2s ease;
+  background: #eaeff1;
+  color: #34404b;
   
-  ${props => props.variant === 'primary' ? `
-    background: #01151d;
-    color: #ffffff;
-    
-    &:hover {
-      background: #1a2d35;
-    }
-  ` : `
-    background: rgba(30, 105, 118, 0.08);
-    color: #01151d;
-    
-    &:hover {
-      background: rgba(30, 105, 118, 0.12);
-    }
-  `}
+  &:hover {
+    background: #dfe5e8;
+  }
 `;
 
 interface TextCTAProps {

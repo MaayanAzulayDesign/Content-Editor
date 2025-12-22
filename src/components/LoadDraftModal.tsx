@@ -35,6 +35,7 @@ const ModalHeader = styled.div`
 const ModalTitle = styled.h2`
   font-size: 24px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin: 0;
 `;
@@ -76,12 +77,14 @@ const DropZone = styled.div<{ isDragging: boolean }>`
 
 const DropZoneText = styled.p`
   font-size: 16px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #56656b;
   margin: 0 0 8px 0;
 `;
 
 const DropZoneSubtext = styled.p`
   font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #b7c0c3;
   margin: 0;
 `;
@@ -102,6 +105,7 @@ const FileInfo = styled.div`
 
 const FileName = styled.span`
   font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
 `;
 
@@ -111,6 +115,7 @@ const RemoveFileButton = styled.button`
   color: #56656b;
   cursor: pointer;
   font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
   padding: 4px 8px;
   border-radius: 4px;
   transition: background 0.2s ease;
@@ -133,6 +138,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   border: none;
   font-size: 16px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
 

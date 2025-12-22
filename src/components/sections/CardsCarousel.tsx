@@ -1,7 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SectionData } from '../../types';
-import { FiMail, FiArrowRight } from 'react-icons/fi';
 
 const Container = styled.div`
   position: relative;
@@ -135,11 +134,10 @@ const CTAButton = styled.a`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   padding: 14px 24px;
-  border: 1px solid #ced5d8;
-  background: #ffffff;
-  color: #01151d;
+  background: #eaeff1;
+  color: #34404b;
   text-decoration: none;
   border-radius: 6px;
   font-size: 16px;
@@ -147,19 +145,16 @@ const CTAButton = styled.a`
   min-height: 48px;
   
   &:hover {
-    border-color: #01151d;
-    background: #f6f9fa;
+    background: #dfe5e8;
   }
 `;
 
 const PrimaryCTA = styled(CTAButton)`
-  background: #01151d;
-  color: #ffffff;
-  border-color: #01151d;
+  background: #eaeff1;
+  color: #34404b;
   
   &:hover {
-    background: #1a2d35;
-    border-color: #1a2d35;
+    background: #dfe5e8;
   }
 `;
 
@@ -208,14 +203,14 @@ const CardsCarousel: React.FC<CardsCarouselProps> = ({ data }) => {
               <CTAContainer>
                 {card.cta?.text && card.cta?.url && (
                   <CTAButton href={card.cta.url}>
-                    <FiMail size={20} />
                     {card.cta.text || 'Contact'}
+                    <span>→</span>
                   </CTAButton>
                 )}
                 {card.cta2?.text && card.cta2?.url && (
                   <PrimaryCTA href={card.cta2.url}>
                     {card.cta2.text || 'Details'}
-                    <FiArrowRight size={20} />
+                    <span>→</span>
                   </PrimaryCTA>
                 )}
               </CTAContainer>

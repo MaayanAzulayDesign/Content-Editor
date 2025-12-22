@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => {
     open: true
     },
     build: {
+      chunkSizeWarningLimit: 1000,
       ...(isSingleFile ? {
         // Optimize for single file output
         cssCodeSplit: false,

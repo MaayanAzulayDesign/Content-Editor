@@ -51,6 +51,7 @@ const LibraryHeader = styled.div`
 const LibraryTitle = styled.h2`
   font-size: 24px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin: 0;
 `;
@@ -197,6 +198,74 @@ const ImageTextLeftWireframe = styled.div`
 const ImageTextRightWireframe = styled(ImageTextLeftWireframe)`
   flex-direction: row-reverse;
 `;
+
+// Hero with Image, Title & CTAs wireframe (image on right)
+const HeroImageTitleCTAsWireframe = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 6px;
+  padding: 2px;
+  position: relative;
+  
+  ${WireframeBox}:first-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px;
+    background: transparent;
+    justify-content: flex-start;
+    
+    &::before {
+      content: '';
+      width: 90%;
+      height: 11px;
+      background: #e5e7eb;
+      border-radius: 3px;
+    }
+    
+    &::after {
+      content: '';
+      width: 70%;
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 3px;
+      margin-top: 2px;
+    }
+  }
+  
+  ${WireframeBox}:last-child {
+    width: 45%;
+    height: 100%;
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 12px;
+    left: 4px;
+    width: 25%;
+    height: 7px;
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 12px;
+    left: calc(25% + 4px);
+    width: 25%;
+    height: 7px;
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+`;
+
+// Text + CTA wireframe
 
 // Text + CTA wireframe
 const TextCTAWireframe = styled.div`
@@ -410,6 +479,7 @@ const TextBoxesWireframe = styled.div<{ count: number }>`
 
 const LayoutName = styled.span`
   font-size: 14px;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   font-weight: 400;
 `;
@@ -422,6 +492,13 @@ const WireframeIcon: React.FC<WireframeIconProps> = ({ type }) => {
   switch (type) {
     case 'hero-image-text':
       return <HeroWireframe />;
+    case 'hero-image-title-ctas':
+      return (
+        <HeroImageTitleCTAsWireframe>
+          <WireframeBox />
+          <WireframeBox />
+        </HeroImageTitleCTAsWireframe>
+      );
     case 'image-text-left':
       return (
         <ImageTextLeftWireframe>
@@ -477,6 +554,7 @@ const WireframeIcon: React.FC<WireframeIconProps> = ({ type }) => {
 
 const sectionLayouts: { type: SectionType; name: string }[] = [
   { type: 'hero-image-text', name: 'Hero with Image & Text' },
+  { type: 'hero-image-title-ctas', name: 'Hero with Image, Title & CTA\'s' },
   { type: 'image-text-left', name: 'Image Left, Text Right' },
   { type: 'image-text-right', name: 'Image Right, Text Left' },
   { type: 'text-cta', name: 'Text with CTA' },
@@ -493,7 +571,19 @@ const SectionLibrary: React.FC = () => {
   if (!isLibraryOpen) return null;
 
   const handleSelectLayout = (type: SectionType) => {
-    addSection(type);
+    const insertAfter = (window as any).__pendingInsertAfter;
+    // If insertAfter is null, it means insert at the beginning
+    // If insertAfter is undefined, it means add at the end (default behavior)
+    // If insertAfter is a string, it means insert after that section
+    if (insertAfter === null) {
+      addSection(type, undefined); // Insert at beginning (no insertAfter means first position)
+    } else if (insertAfter === undefined) {
+      addSection(type); // Add at end (default)
+    } else {
+      addSection(type, insertAfter); // Insert after specific section
+    }
+    (window as any).__pendingInsertAfter = undefined;
+    closeLibrary();
   };
 
   return (

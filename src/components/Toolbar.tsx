@@ -36,6 +36,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   border: none;
   font-size: 16px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -59,12 +60,21 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
+  gap: 12px;
   height: 24px;
 `;
 
 const Logo = styled.img`
   height: 24px;
   width: auto;
+`;
+
+const AppName = styled.span`
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #01151d;
+  line-height: 1;
 `;
 
 const Toolbar: React.FC = () => {
@@ -127,6 +137,7 @@ const Toolbar: React.FC = () => {
       <ToolbarContainer>
         <LogoContainer>
           <Logo src={jllogo} alt="JLL Logo" />
+          <AppName>Resi Studio</AppName>
         </LogoContainer>
         <LeftActions>
           <Button onClick={handleSaveDraft}>Save Draft</Button>

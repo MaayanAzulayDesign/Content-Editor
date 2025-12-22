@@ -35,6 +35,7 @@ const ModalHeader = styled.div`
 const ModalTitle = styled.h2`
   font-size: 24px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin: 0;
 `;
@@ -67,6 +68,7 @@ const Label = styled.label`
   display: block;
   font-size: 14px;
   font-weight: 400;
+  font-family: 'Source Sans Pro', sans-serif;
   color: #01151d;
   margin-bottom: 8px;
 `;
