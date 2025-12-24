@@ -5,6 +5,7 @@ import { exportToHTML } from '../utils/htmlExporter';
 import { saveFileLocally, sendEmailWithAttachments } from '../utils/fileUtils';
 import LoadDraftModal from './LoadDraftModal';
 import SaveAndSendModal from './SaveAndSendModal';
+import InstructionsModal from './InstructionsModal';
 import jllogo from '../assets/jllogo.svg';
 
 const ToolbarContainer = styled.div`
@@ -84,6 +85,7 @@ const Toolbar: React.FC = () => {
   const { state, loadDraftFromFile } = useEditor();
   const [isLoadModalOpen, setIsLoadModalOpen] = useState(false);
   const [isSaveAndSendModalOpen, setIsSaveAndSendModalOpen] = useState(false);
+  const [isInstructionsModalOpen, setIsInstructionsModalOpen] = useState(false);
 
   const handleSaveDraft = async () => {
     try {
@@ -121,6 +123,10 @@ const Toolbar: React.FC = () => {
     setIsSaveAndSendModalOpen(true);
   };
 
+  const handleInstructions = () => {
+    setIsInstructionsModalOpen(true);
+  };
+
   const handleSendEmail = async (email: string, files: File[]) => {
     try {
       await sendEmailWithAttachments(email, files);
@@ -147,6 +153,7 @@ const Toolbar: React.FC = () => {
           <Button onClick={handleLoadDraft}>Load Draft</Button>
         </LeftActions>
         <RightActions>
+          <Button onClick={handleInstructions}>Instructions</Button>
           <Button onClick={handleExportHTML}>Export HTML</Button>
           <Button variant="primary" onClick={handleSaveAndSend}>
             Save & Send
@@ -165,6 +172,12 @@ const Toolbar: React.FC = () => {
         onClose={() => setIsSaveAndSendModalOpen(false)}
         htmlContent={htmlContent}
         onSend={handleSendEmail}
+      />
+
+      <InstructionsModal
+        isOpen={isInstructionsModalOpen}
+        onClose={() => setIsInstructionsModalOpen(false)}
+        sections={state.sections}
       />
     </>
   );
