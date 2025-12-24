@@ -101,11 +101,15 @@ export interface LocationData {
   cta?: CTA;
 }
 
+export type Language = 'en' | 'pt' | 'zh-CN' | 'zh-TW';
+
 export interface EditorState {
   sections: Section[];
   currentSectionId: string | null;
   isDrawerOpen: boolean;
   isLibraryOpen: boolean;
   pagePath?: string; // e.g., "/services/letting"
+  currentLanguage: Language;
+  translations: Record<Language, Section[]>;
 }
 

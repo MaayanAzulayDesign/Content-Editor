@@ -15,6 +15,9 @@ const ToolbarContainer = styled.div`
   background: #ffffff;
   border-bottom: 1px solid #eaeff1;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 `;
 
 const LeftActions = styled.div`

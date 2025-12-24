@@ -20,6 +20,7 @@ const MainContent = styled.div`
   flex: 1;
   position: relative;
   overflow-x: hidden;
+  overflow-y: auto;
 `;
 
 const SectionsContainer = styled.div<{ drawerOpen: boolean }>`
