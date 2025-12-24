@@ -1,4 +1,4 @@
-import { Section, SectionType } from '../types';
+import { Section } from '../types';
 
 export interface SitefinityInstructions {
   formattedText: string;
@@ -43,7 +43,7 @@ function formatListItems(text: string): string {
 /**
  * Generates image upload instructions
  */
-function getImageInstructions(imageUrl: string | undefined, imageAlt: string | undefined): string {
+function getImageInstructions(imageUrl: string | undefined): string {
   if (!imageUrl) {
     return '⚠️ **Image Required**: Add an image to this section first, then upload it to Cloudinary before proceeding.';
   }
@@ -87,7 +87,7 @@ function generateImageTextInstructions(section: Section, index: number): Sitefin
   const isLeft = section.type === 'image-text-left';
   const position = isLeft ? 'left' : 'right';
   
-  const imageInstructions = getImageInstructions(data.image?.url, data.image?.alt);
+  const imageInstructions = getImageInstructions(data.image?.url);
   const imageUrl = data.image?.url || '[CLOUDINARY_IMAGE_URL]';
   const heading = data.title || '[HEADING]';
   const body = data.text ? formatListItems(formatBodyText(data.text)) : '[BODY_TEXT]';

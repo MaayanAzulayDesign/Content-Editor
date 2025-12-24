@@ -226,7 +226,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ isOpen, onClose, 
     let formatted = text;
     
     // Convert code blocks first (before other processing)
-    formatted = formatted.replace(/```([\s\S]*?)```/g, (match, code) => {
+    formatted = formatted.replace(/```([\s\S]*?)```/g, (_match, code) => {
       const escapedCode = code
         .trim()
         .replace(/&/g, '&amp;')
